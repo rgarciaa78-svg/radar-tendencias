@@ -25,28 +25,28 @@ function getReliableUrl(source: Source): string {
   const q = encodeURIComponent(clean);
   switch (source.type) {
     case 'tiktok':
-      return `https://www.google.com/search?q=${q}+tiktok+tendencia&tbm=vid`;
+      return `https://www.google.com/search?q=${q}+tiktok+trend+USA+Europe&tbm=vid&hl=en&gl=us`;
     case 'instagram': {
       const tag = clean.toLowerCase().replace(/\s+/g, '');
       return `https://www.instagram.com/explore/tags/${encodeURIComponent(tag)}/`;
     }
     case 'facebook':
-      return `https://www.google.com/search?q=${q}+facebook+tendencia+alimento`;
+      return `https://www.google.com/search?q=${q}+facebook+food+trend+USA+Europe&hl=en&gl=us`;
     case 'youtube':
       if (source.url.includes('youtube.com/results')) return source.url;
-      return `https://www.youtube.com/results?search_query=${q}`;
+      return `https://www.youtube.com/results?search_query=${encodeURIComponent(clean + ' USA trend')}`;
     case 'x':
-      return `https://x.com/search?q=${encodeURIComponent(clean)}&f=live`;
+      return `https://x.com/search?q=${encodeURIComponent(clean)}&f=live&lang=en`;
     case 'paper':
-      return `https://scholar.google.com/scholar?q=${q}`;
+      return `https://scholar.google.com/scholar?q=${q}&hl=en`;
     case 'report':
-      return `https://www.google.com/search?q=${q}+market+report+2025&tbm=nws`;
+      return `https://www.google.com/search?q=${q}+market+report+USA+Europe+2025&tbm=nws&hl=en&gl=us`;
     case 'product':
-      return `https://www.google.com/search?q=${q}+buy+online`;
+      return `https://www.google.com/search?q=${q}+USA+Europe+buy+online&hl=en&gl=us`;
     case 'article':
-      return `https://www.google.com/search?q=${q}+food+trend+2025&tbm=nws`;
+      return `https://www.google.com/search?q=${q}+food+trend+USA+Europe+2025&tbm=nws&hl=en&gl=us`;
     default:
-      return `https://www.google.com/search?q=${q}`;
+      return `https://www.google.com/search?q=${q}+USA+Europe+food+trend&hl=en&gl=us`;
   }
 }
 
@@ -174,8 +174,8 @@ export function TrendModal() {
             <div className="flex flex-wrap gap-2">
               {[
                 {
-                  label: '📰 Noticias Perú',
-                  url: `https://www.google.com/search?q=${encodeURIComponent(trend.name)}+Peru+tendencia&tbm=nws&hl=es-419&gl=pe`,
+                  label: '📰 Noticias EEUU',
+                  url: `https://www.google.com/search?q=${encodeURIComponent(trend.name)}+food+trend+USA+Europe&tbm=nws&hl=en&gl=us`,
                   cls: 'bg-blue-600 hover:bg-blue-700',
                 },
                 {

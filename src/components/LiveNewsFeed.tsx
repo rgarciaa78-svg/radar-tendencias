@@ -108,7 +108,7 @@ function makeGoogleNewsUrl(query: string): string {
   return `https://www.google.com/search?q=${encodeURIComponent(query)}&tbm=nws&hl=es-419&gl=pe`;
 }
 function makeGoogleTrendsUrl(query: string): string {
-  return `https://www.google.com/search?q=${encodeURIComponent(query)}+Peru+tendencia&tbm=nws&hl=es-419&gl=pe`;
+  return `https://www.google.com/search?q=${encodeURIComponent(query)}+food+trend+USA+Europe&tbm=nws&hl=en&gl=us`;
 }
 function makeTikTokUrl(query: string): string {
   return `https://www.tiktok.com/search?q=${encodeURIComponent(query)}`;
