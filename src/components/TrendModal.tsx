@@ -187,8 +187,8 @@ export function TrendModal() {
                   cls: 'bg-red-500 hover:bg-red-600',
                 },
                 {
-                  label: '📰 Noticias globales',
-                  url: `https://www.google.com/search?q=${encodeURIComponent(trend.name)}+food+launch+trend&tbm=nws`,
+                  label: '📰 Buscar en Google',
+                  url: `https://www.google.com/search?q=${encodeURIComponent(trend.name)}+food+launch+trend`,
                   cls: 'bg-slate-600 hover:bg-slate-700',
                 },
               ].map(({ label, url, cls }) => (
