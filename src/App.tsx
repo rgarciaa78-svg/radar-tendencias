@@ -8,6 +8,7 @@ import { Launches } from './components/Launches';
 import { TrendsList } from './components/TrendsList';
 import { GlobalTrends } from './components/GlobalTrends';
 import { Pipeline } from './components/Pipeline';
+import { Campaigns } from './components/Campaigns';
 import { TrendModal } from './components/TrendModal';
 import { ExportModal } from './components/ExportModal';
 import { useTrendStore } from './store/useTrendStore';
@@ -19,6 +20,7 @@ const VIEW_LABELS: Record<string, string> = {
   tendencias:   'Tendencias',
   globales:     'Señales Globales',
   favoritos:    'Favoritos',
+  'campañas':   'Campañas Globales',
 };
 
 export default function App() {
@@ -80,6 +82,7 @@ export default function App() {
           {activeView === 'tendencias'   && <TrendsList />}
           {activeView === 'globales'     && <GlobalTrends />}
           {activeView === 'favoritos'    && <TrendsList onlyFavorites />}
+          {activeView === 'campañas'     && <Campaigns />}
         </main>
       </div>
 

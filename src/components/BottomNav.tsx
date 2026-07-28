@@ -1,4 +1,4 @@
-import { LayoutDashboard, Rocket, TrendingUp, Globe, Heart, Kanban } from 'lucide-react';
+import { LayoutDashboard, Rocket, TrendingUp, Globe, Heart, Megaphone } from 'lucide-react';
 import { useTrendStore } from '../store/useTrendStore';
 
 const NAV = [
@@ -6,7 +6,7 @@ const NAV = [
   { view: 'lanzamientos', label: 'Lanzamientos', icon: Rocket },
   { view: 'tendencias',   label: 'Tendencias',   icon: TrendingUp },
   { view: 'globales',     label: 'Globales',     icon: Globe },
-  { view: 'pipeline',     label: 'Pipeline',     icon: Kanban },
+  { view: 'campañas',     label: 'Campañas',     icon: Megaphone },
   { view: 'favoritos',    label: 'Favoritos',    icon: Heart },
 ] as const;
 
