@@ -108,7 +108,7 @@ function makeGoogleNewsUrl(query: string): string {
   return `https://www.google.com/search?q=${encodeURIComponent(query)}&tbm=nws&hl=es-419&gl=pe`;
 }
 function makeGoogleTrendsUrl(query: string): string {
-  return `https://trends.google.com/trends/explore?q=${encodeURIComponent(query)}&geo=PE&hl=es`;
+  return `https://www.google.com/search?q=${encodeURIComponent(query)}+Peru+tendencia&tbm=nws&hl=es-419&gl=pe`;
 }
 function makeTikTokUrl(query: string): string {
   return `https://www.tiktok.com/search?q=${encodeURIComponent(query)}`;
@@ -125,7 +125,7 @@ export function LiveNewsFeed() {
             <h3 className="font-black text-slate-800 text-lg">Buscar Señales en Vivo</h3>
           </div>
           <p className="text-xs text-slate-500">
-            Acceso directo a Google News, Google Trends PE y TikTok para cada categoría relevante
+            Acceso directo a Google News, Noticias Perú y TikTok para cada categoría relevante
           </p>
         </div>
         <div className="flex items-center gap-1.5 text-xs bg-green-100 text-green-700 font-bold px-2.5 py-1 rounded-full flex-shrink-0">
@@ -139,7 +139,7 @@ export function LiveNewsFeed() {
         <TrendingUp size={14} className="text-blue-600 mt-0.5 flex-shrink-0" />
         <p className="text-xs text-blue-800 leading-relaxed">
           Haz clic en <span className="font-bold">Google News</span> para ver noticias reales de hoy,
-          en <span className="font-bold">Trends PE</span> para ver si la tendencia ya llegó a Perú,
+          en <span className="font-bold">Noticias PE</span> para ver si la tendencia ya llegó a Perú,
           y en <span className="font-bold">TikTok</span> para medir el volumen viral.
         </p>
       </div>

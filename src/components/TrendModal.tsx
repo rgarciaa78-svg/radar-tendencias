@@ -20,30 +20,31 @@ const SOURCE_META: Record<Source['type'], { icon: typeof ExternalLink; color: st
   report:   { icon: BarChart2,    color: 'text-amber-700',  bg: 'bg-amber-50 border-amber-200',   label: 'Reporte',         action: 'Busca en Google' },
 };
 
-/** Genera una URL que SIEMPRE funciona, basada en el tipo de fuente + etiqueta */
 function getReliableUrl(source: Source): string {
-  const q = encodeURIComponent(source.label);
+  const clean = source.label.replace(/^[#@]/, '').split(' — ')[0].trim();
+  const q = encodeURIComponent(clean);
   switch (source.type) {
-    case 'tiktok': {
-      // Extrae término de búsqueda limpio (sin # y solo las primeras palabras)
-      const term = source.label.replace(/^#/, '').split(' — ')[0].trim();
-      return `https://www.tiktok.com/search?q=${encodeURIComponent(term)}`;
+    case 'tiktok':
+      return `https://www.google.com/search?q=${q}+tiktok+tendencia&tbm=vid`;
+    case 'instagram': {
+      const tag = clean.toLowerCase().replace(/\s+/g, '');
+      return `https://www.instagram.com/explore/tags/${encodeURIComponent(tag)}/`;
     }
+    case 'facebook':
+      return `https://www.google.com/search?q=${q}+facebook+tendencia+alimento`;
     case 'youtube':
-      // Si ya es una URL de búsqueda de YouTube, úsala; sino genera una
       if (source.url.includes('youtube.com/results')) return source.url;
       return `https://www.youtube.com/results?search_query=${q}`;
     case 'x':
-      return `https://x.com/search?q=${encodeURIComponent(source.label.replace(/^[#@]/, ''))}`;
+      return `https://x.com/search?q=${encodeURIComponent(clean)}&f=live`;
     case 'paper':
       return `https://scholar.google.com/scholar?q=${q}`;
     case 'report':
-      return `https://www.google.com/search?q=${q}+informe+mercado&tbm=nws`;
+      return `https://www.google.com/search?q=${q}+market+report+2025&tbm=nws`;
     case 'product':
-      return `https://www.google.com/search?q=${q}`;
-    case 'instagram':
-    case 'facebook':
+      return `https://www.google.com/search?q=${q}+buy+online`;
     case 'article':
+      return `https://www.google.com/search?q=${q}+food+trend+2025&tbm=nws`;
     default:
       return `https://www.google.com/search?q=${q}`;
   }
@@ -173,8 +174,8 @@ export function TrendModal() {
             <div className="flex flex-wrap gap-2">
               {[
                 {
-                  label: '📈 Google Trends PE',
-                  url: `https://trends.google.com/trends/explore?q=${encodeURIComponent(trend.name)}&geo=PE&hl=es`,
+                  label: '📰 Noticias Perú',
+                  url: `https://www.google.com/search?q=${encodeURIComponent(trend.name)}+Peru+tendencia&tbm=nws&hl=es-419&gl=pe`,
                   cls: 'bg-blue-600 hover:bg-blue-700',
                 },
                 {

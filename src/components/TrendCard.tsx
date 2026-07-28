@@ -90,7 +90,7 @@ export function TrendCard({ trend, compact = false }: TrendCardProps) {
         <div className="flex flex-wrap items-center gap-1.5 mt-3 pt-3 border-t border-slate-100">
           <span className="text-xs text-slate-400 font-medium">Validar:</span>
           {[
-            { label: 'Google Trends', url: `https://trends.google.com/trends/explore?q=${encodeURIComponent(trend.name)}&geo=PE&hl=es`, cls: 'bg-blue-50 text-blue-700' },
+            { label: 'Noticias Perú', url: `https://www.google.com/search?q=${encodeURIComponent(trend.name)}+Peru+tendencia&tbm=nws&hl=es-419&gl=pe`, cls: 'bg-blue-50 text-blue-700' },
             { label: 'TikTok', url: `https://www.tiktok.com/search?q=${encodeURIComponent(trend.name)}`, cls: 'bg-pink-50 text-pink-700' },
             { label: 'YouTube', url: `https://www.youtube.com/results?search_query=${encodeURIComponent(trend.name + ' Peru')}`, cls: 'bg-red-50 text-red-700' },
           ].map(({ label, url, cls }) => (
