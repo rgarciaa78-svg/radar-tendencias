@@ -167,28 +167,28 @@ export function TrendModal() {
           <div className="mb-4">
             <div className="flex items-center gap-2 mb-2">
               <Search size={12} className="text-slate-400" />
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Validar en Perú ahora</span>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Validar tendencia global</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {[
                 {
-                  label: '📰 Noticias EEUU',
-                  url: `https://www.google.com/search?q=${encodeURIComponent(trend.name)}+food+trend+USA+Europe&tbm=nws&hl=en&gl=us`,
+                  label: '🌎 Google EEUU/Europa',
+                  url: `https://www.google.com/search?q=${encodeURIComponent(trend.name)}+food+trend+USA+Europe`,
                   cls: 'bg-blue-600 hover:bg-blue-700',
                 },
                 {
-                  label: '🎵 Busca en TikTok',
-                  url: `https://www.tiktok.com/search?q=${encodeURIComponent(trend.name)}`,
+                  label: '🎵 TikTok',
+                  url: `https://www.google.com/search?q=${encodeURIComponent(trend.name)}+tiktok+trend&tbm=vid`,
                   cls: 'bg-pink-500 hover:bg-pink-600',
                 },
                 {
-                  label: '▶️ Busca en YouTube',
-                  url: `https://www.youtube.com/results?search_query=${encodeURIComponent(trend.name + ' Peru')}`,
+                  label: '▶️ YouTube',
+                  url: `https://www.youtube.com/results?search_query=${encodeURIComponent(trend.name + ' USA Europe trend')}`,
                   cls: 'bg-red-500 hover:bg-red-600',
                 },
                 {
-                  label: '🔍 Noticias Perú',
-                  url: `https://www.google.com/search?q=${encodeURIComponent(trend.name + ' Peru')}&tbm=nws&hl=es-419&gl=pe`,
+                  label: '📰 Noticias globales',
+                  url: `https://www.google.com/search?q=${encodeURIComponent(trend.name)}+food+launch+trend&tbm=nws`,
                   cls: 'bg-slate-600 hover:bg-slate-700',
                 },
               ].map(({ label, url, cls }) => (

@@ -92,7 +92,7 @@ export function TrendCard({ trend, compact = false }: TrendCardProps) {
           {[
             { label: 'Noticias EEUU', url: `https://www.google.com/search?q=${encodeURIComponent(trend.name)}+food+trend+USA&tbm=nws&hl=en&gl=us`, cls: 'bg-blue-50 text-blue-700' },
             { label: 'TikTok', url: `https://www.tiktok.com/search?q=${encodeURIComponent(trend.name)}`, cls: 'bg-pink-50 text-pink-700' },
-            { label: 'YouTube', url: `https://www.youtube.com/results?search_query=${encodeURIComponent(trend.name + ' Peru')}`, cls: 'bg-red-50 text-red-700' },
+            { label: 'YouTube', url: `https://www.youtube.com/results?search_query=${encodeURIComponent(trend.name + ' USA Europe trend')}`, cls: 'bg-red-50 text-red-700' },
           ].map(({ label, url, cls }) => (
             <a
               key={label}
