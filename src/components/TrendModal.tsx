@@ -25,28 +25,26 @@ function getReliableUrl(source: Source): string {
   const q = encodeURIComponent(clean);
   switch (source.type) {
     case 'tiktok':
-      return `https://www.google.com/search?q=${q}+tiktok+trend+USA+Europe&tbm=vid&hl=en&gl=us`;
+      return `https://www.google.com/search?q=${q}+tiktok+trend&tbm=vid`;
     case 'instagram': {
       const tag = clean.toLowerCase().replace(/\s+/g, '');
       return `https://www.instagram.com/explore/tags/${encodeURIComponent(tag)}/`;
     }
-    case 'facebook':
-      return `https://www.google.com/search?q=${q}+facebook+food+trend+USA+Europe&hl=en&gl=us`;
     case 'youtube':
       if (source.url.includes('youtube.com/results')) return source.url;
-      return `https://www.youtube.com/results?search_query=${encodeURIComponent(clean + ' USA trend')}`;
+      return `https://www.youtube.com/results?search_query=${q}`;
     case 'x':
-      return `https://x.com/search?q=${encodeURIComponent(clean)}&f=live&lang=en`;
+      return `https://x.com/search?q=${encodeURIComponent(clean)}&f=live`;
     case 'paper':
-      return `https://scholar.google.com/scholar?q=${q}&hl=en`;
+      return `https://scholar.google.com/scholar?q=${q}`;
     case 'report':
-      return `https://www.google.com/search?q=${q}+market+report+USA+Europe+2025&tbm=nws&hl=en&gl=us`;
+      return `https://www.google.com/search?q=${q}+USA+Europe+market+2025`;
     case 'product':
-      return `https://www.google.com/search?q=${q}+USA+Europe+buy+online&hl=en&gl=us`;
+      return `https://www.google.com/search?q=${q}+USA+Europe`;
     case 'article':
-      return `https://www.google.com/search?q=${q}+food+trend+USA+Europe+2025&tbm=nws&hl=en&gl=us`;
+    case 'facebook':
     default:
-      return `https://www.google.com/search?q=${q}+USA+Europe+food+trend&hl=en&gl=us`;
+      return `https://www.google.com/search?q=${q}+USA+Europe+trend+2025`;
   }
 }
 
