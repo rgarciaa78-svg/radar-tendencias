@@ -179,7 +179,7 @@ export const useTrendStore = create<TrendStore>()(
       },
     }),
     {
-      name: 'radar-tendencias-v9',
+      name: 'radar-tendencias-v10',
       partialize: (state) => ({
         trends: state.trends,
         launches: state.launches,
