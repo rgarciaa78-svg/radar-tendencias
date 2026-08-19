@@ -1,0 +1,49 @@
+name: Auto-update Radar de Tendencias
+
+on:
+  schedule:
+    # Cada 2 días a las 9am hora Perú (UTC-5 = 14:00 UTC)
+    - cron: '0 14 */2 * *'
+  # Permite ejecutar manualmente desde GitHub
+  workflow_dispatch:
+
+jobs:
+  update-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Aplicar próximo batch de tendencias
+        run: node scripts/apply-next-batch.js
+
+      - name: Construir la app
+        run: npm run build
+
+      - name: Commit y push cambios
+        run: |
+          git config user.name "Radar Auto-Update"
+          git config user.email "action@github.com"
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No hay cambios nuevos."
+          else
+            BATCH=$(cat src/data/batchCounter.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['nextBatch']-1)")
+            git commit -m "Auto-update: nuevas tendencias batch ${BATCH} — $(date '+%Y-%m-%d')"
+            git push
+            echo "✅ Cambios publicados en GitHub Pages"
+          fi

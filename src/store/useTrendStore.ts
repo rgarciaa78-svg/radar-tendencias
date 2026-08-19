@@ -6,6 +6,7 @@ import { launches as initialLaunches } from '../data/launches';
 import { globalSignals } from '../data/globalSignals';
 import { newTrendsBatch1 } from '../data/newTrends';
 import { newLaunchesBatch1 } from '../data/newLaunchesBatch1';
+import { autoTrends } from '../data/autoTrends';
 
 interface Filters {
   region: Region | 'Todas';
@@ -62,7 +63,7 @@ const todayStr = () => new Date().toISOString().split('T')[0];
 export const useTrendStore = create<TrendStore>()(
   persist(
     (set, get) => ({
-      trends: initialTrends,
+      trends: [...autoTrends, ...initialTrends],
       launches: initialLaunches,
       signals: globalSignals,
       filters: defaultFilters,
