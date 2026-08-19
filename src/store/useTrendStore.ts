@@ -177,13 +177,23 @@ export const useTrendStore = create<TrendStore>()(
       },
     }),
     {
-      name: 'radar-tendencias-v8',
+      name: 'radar-tendencias-v9',
       partialize: (state) => ({
         trends: state.trends,
         launches: state.launches,
         lastUpdated: state.lastUpdated,
         lastLaunchSync: state.lastLaunchSync,
         updateAvailable: state.updateAvailable,
+      }),
+      merge: (persisted: any, current) => ({
+        ...current,
+        ...persisted,
+        // Siempre incluir autoTrends nuevas que no estén en el estado guardado
+        trends: (() => {
+          const savedIds = new Set((persisted as any)?.trends?.map((t: any) => t.id) ?? []);
+          const freshAuto = autoTrends.filter(t => !savedIds.has(t.id));
+          return [...freshAuto, ...((persisted as any)?.trends ?? current.trends)];
+        })(),
       }),
     }
   )
