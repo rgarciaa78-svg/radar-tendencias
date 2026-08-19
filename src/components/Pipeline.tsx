@@ -21,7 +21,7 @@ export function Pipeline() {
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<Status | null>(null);
 
-  const visibleTrends = brandFilter === 'Todas' ? trends : trends.filter((t) => t.brand === brandFilter);
+  const visibleTrends = [...(brandFilter === 'Todas' ? trends : trends.filter((t) => t.brand === brandFilter))].sort((a, b) => b.score - a.score);
   const totalActive = trends.filter((t) => t.status !== 'Descartada').length;
   const readyToLaunch = trends.filter((t) => t.status === 'Lista para lanzar').length;
   const inProto = trends.filter((t) => t.status === 'En prototipo').length;

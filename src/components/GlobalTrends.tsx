@@ -125,9 +125,8 @@ export function GlobalTrends() {
   const { signals } = useTrendStore();
   const [brandFilter, setBrandFilter] = useState<BrandFilter>('Todas');
 
-  const filtered = brandFilter === 'Todas'
-    ? signals
-    : signals.filter((s) => s.brand === brandFilter);
+  const IMPACT_ORDER = { 'Alto': 0, 'Medio': 1, 'Bajo': 2 };
+  const filtered = [...(brandFilter === 'Todas' ? signals : signals.filter((s) => s.brand === brandFilter))].sort((a, b) => IMPACT_ORDER[a.impact] - IMPACT_ORDER[b.impact]);
 
   const counts: Record<string, number> = { Todas: signals.length, TIGO: 0, Straal: 0, 'B&D': 0 };
   signals.forEach((s) => { if (s.brand in counts) counts[s.brand]++; });

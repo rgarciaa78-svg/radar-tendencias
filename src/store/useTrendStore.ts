@@ -143,22 +143,24 @@ export const useTrendStore = create<TrendStore>()(
 
       getFilteredTrends: () => {
         const { trends, filters } = get();
-        return trends.filter((t) => {
-          if (filters.region !== 'Todas' && t.region !== filters.region) return false;
-          if (filters.brand !== 'Todas' && t.brand !== filters.brand) return false;
-          if (filters.category !== 'Todas' && t.category !== filters.category) return false;
-          if (filters.priority !== 'Todas' && t.priority !== filters.priority) return false;
-          if (filters.status !== 'Todas' && t.status !== filters.status) return false;
-          if (filters.onlyFavorites && !t.isFavorite) return false;
-          if (
-            filters.search &&
-            !t.name.toLowerCase().includes(filters.search.toLowerCase()) &&
-            !t.category.toLowerCase().includes(filters.search.toLowerCase()) &&
-            !t.tags.some((tag) => tag.toLowerCase().includes(filters.search.toLowerCase()))
-          )
-            return false;
-          return true;
-        });
+        return [...trends]
+          .filter((t) => {
+            if (filters.region !== 'Todas' && t.region !== filters.region) return false;
+            if (filters.brand !== 'Todas' && t.brand !== filters.brand) return false;
+            if (filters.category !== 'Todas' && t.category !== filters.category) return false;
+            if (filters.priority !== 'Todas' && t.priority !== filters.priority) return false;
+            if (filters.status !== 'Todas' && t.status !== filters.status) return false;
+            if (filters.onlyFavorites && !t.isFavorite) return false;
+            if (
+              filters.search &&
+              !t.name.toLowerCase().includes(filters.search.toLowerCase()) &&
+              !t.category.toLowerCase().includes(filters.search.toLowerCase()) &&
+              !t.tags.some((tag) => tag.toLowerCase().includes(filters.search.toLowerCase()))
+            )
+              return false;
+            return true;
+          })
+          .sort((a, b) => b.score - a.score);
       },
 
       getTop10: () => {

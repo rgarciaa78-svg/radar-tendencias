@@ -5,7 +5,9 @@ import { Filters } from './Filters';
 export function TrendsList({ onlyFavorites = false }: { onlyFavorites?: boolean }) {
   const { getFilteredTrends, trends } = useTrendStore();
 
-  const base = onlyFavorites ? trends.filter((t) => t.isFavorite) : getFilteredTrends();
+  const base = onlyFavorites
+    ? [...trends].filter((t) => t.isFavorite).sort((a, b) => b.score - a.score)
+    : getFilteredTrends();
 
   return (
     <div>
