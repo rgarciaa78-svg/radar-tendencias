@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react';
 import { ChevronDown, ChevronRight, CheckSquare, Square, Upload, FileUp, Trash2, RotateCcw, AlertCircle } from 'lucide-react';
-import * as XLSX from 'xlsx';
 import { projectsData, type Project } from '../data/projects';
 
 // Para conectar Google Sheets en el futuro, pega aquí el URL CSV publicado:
@@ -107,7 +106,8 @@ function parseMarca(familia: string): Project['marca'] {
   return 'tigo';
 }
 
-function parseExcelFile(buffer: ArrayBuffer): Project[] {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function parseExcelFile(XLSX: any, buffer: ArrayBuffer): Project[] {
   const wb = XLSX.read(buffer, { type: 'array', cellDates: true });
   const sheetName = wb.SheetNames.includes('Hoja2') ? 'Hoja2' : wb.SheetNames[0];
   const ws = wb.Sheets[sheetName];
@@ -150,8 +150,10 @@ function parseExcelFile(buffer: ArrayBuffer): Project[] {
     const id = `${prefix}${String(counter[marca]).padStart(2, '0')}`;
 
     const claims = claimsRaw
-      ? String(claimsRaw).split(',').map(c => c.trim().replace(/\n/g, ' ')).filter(Boolean)
-          .map(c => c.charAt(0).toUpperCase() + c.slice(1))
+      ? String(claimsRaw).split(',')
+          .map(c => c.trim().replace(/\n/g, ' ').replace(/  +/g, ' '))
+          .filter(Boolean)
+          .map(c => { const l = c.toLowerCase(); return l.charAt(0).toUpperCase() + l.slice(1); })
       : [];
 
     projects.push({
@@ -532,24 +534,23 @@ export function Proyectos() {
     setImportMsg(null);
   }
 
-  function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     e.target.value = '';
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      try {
-        const parsed = parseExcelFile(ev.target!.result as ArrayBuffer);
-        if (parsed.length === 0) throw new Error('No se encontraron proyectos en el archivo.');
-        setProjects(parsed);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
-        setImportMsg({ type: 'ok', text: `${parsed.length} proyectos cargados correctamente.` });
-      } catch (err) {
-        setImportMsg({ type: 'error', text: `Error al leer el archivo: ${(err as Error).message}` });
-      }
-      setTimeout(() => setImportMsg(null), 5000);
-    };
-    reader.readAsArrayBuffer(file);
+    try {
+      const buffer = await file.arrayBuffer();
+      const XLSX = await import('xlsx');
+      const parsed = parseExcelFile(XLSX, buffer);
+      if (parsed.length === 0) throw new Error('No se encontraron proyectos en el archivo.');
+      setProjects(parsed);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+      localStorage.setItem(STORAGE_KEY + '-version', DATA_VERSION);
+      setImportMsg({ type: 'ok', text: `${parsed.length} proyectos cargados correctamente.` });
+    } catch (err) {
+      setImportMsg({ type: 'error', text: `Error al leer el archivo: ${(err as Error).message}` });
+    }
+    setTimeout(() => setImportMsg(null), 5000);
   }
 
   const all    = projects;
