@@ -7,7 +7,6 @@ import { Dashboard } from './components/Dashboard';
 import { Launches } from './components/Launches';
 import { TrendsList } from './components/TrendsList';
 import { GlobalTrends } from './components/GlobalTrends';
-import { Pipeline } from './components/Pipeline';
 import { Campaigns } from './components/Campaigns';
 import { Proyectos } from './components/Proyectos';
 import { TrendModal } from './components/TrendModal';
@@ -16,7 +15,6 @@ import { useTrendStore } from './store/useTrendStore';
 
 const VIEW_LABELS: Record<string, string> = {
   dashboard:    'Dashboard',
-  pipeline:     'Pipeline',
   lanzamientos: 'Lanzamientos',
   tendencias:   'Tendencias',
   globales:     'Señales Globales',
@@ -79,7 +77,6 @@ export default function App() {
         {/* Main content — padding bottom en móvil para la barra inferior */}
         <main className="flex-1 overflow-y-auto pb-20 md:pb-0">
           {activeView === 'dashboard'    && <Dashboard />}
-          {activeView === 'pipeline'     && <Pipeline />}
           {activeView === 'lanzamientos' && <Launches />}
           {activeView === 'tendencias'   && <TrendsList />}
           {activeView === 'globales'     && <GlobalTrends />}

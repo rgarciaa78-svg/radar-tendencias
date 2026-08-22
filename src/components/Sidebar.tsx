@@ -1,9 +1,8 @@
-import { LayoutDashboard, TrendingUp, Heart, Globe2, Rocket, ChevronRight, RefreshCw, Kanban, Megaphone, FlaskConical } from 'lucide-react';
+import { LayoutDashboard, TrendingUp, Heart, Globe2, Rocket, ChevronRight, RefreshCw, Megaphone, FlaskConical } from 'lucide-react';
 import { useTrendStore } from '../store/useTrendStore';
 
 const nav = [
   { id: 'dashboard',    label: 'Dashboard',          icon: LayoutDashboard },
-  { id: 'pipeline',     label: 'Pipeline',            icon: Kanban },
   { id: 'lanzamientos', label: 'Lanzamientos',        icon: Rocket },
   { id: 'tendencias',   label: 'Tendencias',          icon: TrendingUp },
   { id: 'globales',     label: 'Señales Globales',    icon: Globe2 },
