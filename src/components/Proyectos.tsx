@@ -88,7 +88,9 @@ function WellnessBadge({ score }: { score: number }) {
 }
 
 // ── Excel import ──────────────────────────────────────────────────────────────
-const STORAGE_KEY = 'proyectos-custom-data';
+const STORAGE_KEY   = 'proyectos-custom-data';
+const DATA_VERSION  = 'v2';
+const HEADER_WORDS  = new Set(['FAMILIA','PROYECTO','OBJETIVO','CLAIMS','IMAGEN REFERENCIAL','% DE AVANCE','STATUS']);
 
 function fmtDate(d: unknown): string {
   if (d instanceof Date) {
@@ -159,7 +161,8 @@ function parseExcelFile(buffer: ArrayBuffer): Project[] {
       claims, fecha: fmtDate(fecha), etapas, ingredientes: '',
     });
   }
-  return projects;
+  // Final filter: remove any row where nombre looks like a header label
+  return projects.filter(p => !HEADER_WORDS.has(p.nombre.toUpperCase().trim()));
 }
 
 const STAGES = [
@@ -481,12 +484,18 @@ function ProjectTable({
 type FilterMarca = 'todas' | Project['marca'];
 
 function loadProjects(): Project[] {
+  // Force-clear data saved by old (buggy) parser versions
+  const savedVersion = localStorage.getItem(STORAGE_KEY + '-version');
+  if (savedVersion !== DATA_VERSION) {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.setItem(STORAGE_KEY + '-version', DATA_VERSION);
+    return projectsData;
+  }
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved) as Project[];
-      // Sanity check: discard if any project has 'FAMILIA' or 'PROYECTO' as nombre (parser bug artifact)
-      const corrupt = parsed.some(p => ['FAMILIA','PROYECTO','OBJETIVO','CLAIMS'].includes(p.nombre?.toUpperCase().trim()));
+      const corrupt = parsed.some(p => HEADER_WORDS.has(p.nombre?.toUpperCase().trim() ?? ''));
       if (corrupt) { localStorage.removeItem(STORAGE_KEY); return projectsData; }
       return parsed;
     }
