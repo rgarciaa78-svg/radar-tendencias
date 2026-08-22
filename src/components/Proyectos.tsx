@@ -111,7 +111,7 @@ function parseExcelFile(XLSX: any, buffer: ArrayBuffer): Project[] {
   const wb = XLSX.read(buffer, { type: 'array', cellDates: true });
   const sheetName = wb.SheetNames.includes('Hoja2') ? 'Hoja2' : wb.SheetNames[0];
   const ws = wb.Sheets[sheetName];
-  const rows = XLSX.utils.sheet_to_json<(string | number | boolean | Date | null)[]>(ws, { header: 1, defval: null });
+  const rows: (string | number | boolean | Date | null)[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
 
   const projects: Project[] = [];
   const counter: Record<string, number> = { tigo: 0, straal: 0, byd: 0 };
@@ -121,11 +121,11 @@ function parseExcelFile(XLSX: any, buffer: ArrayBuffer): Project[] {
   let skipNext = false;
 
   for (const row of rows) {
-    if (!row || !row.some(v => v !== null && v !== undefined && v !== '')) continue;
+    if (!row || !row.some((v: unknown) => v !== null && v !== undefined && v !== '')) continue;
 
     // Detect header row (FAMILIA + PROYECTO) — can appear multiple times, always skip it and the next row
-    const isHeader = row.some(c => String(c ?? '').toUpperCase().trim() === 'FAMILIA') &&
-                     row.some(c => String(c ?? '').toUpperCase().trim() === 'PROYECTO');
+    const isHeader = row.some((c: unknown) => String(c ?? '').toUpperCase().trim() === 'FAMILIA') &&
+                     row.some((c: unknown) => String(c ?? '').toUpperCase().trim() === 'PROYECTO');
     if (isHeader) { inData = true; skipNext = true; continue; }
     if (skipNext) { skipNext = false; continue; }
     if (!inData) continue;
