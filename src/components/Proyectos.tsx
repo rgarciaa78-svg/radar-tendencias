@@ -30,6 +30,24 @@ function wellnessScore(claims: string[], ingredientes: string): number {
   return Math.min(100, Math.max(0, score));
 }
 
+function claimScore(claim: string): number {
+  const t = claim.toLowerCase();
+  let s = 40;
+  for (const [kw, pts] of WELLNESS_POSITIVE) if (t.includes(kw)) s += pts;
+  for (const [kw, pts] of WELLNESS_NEGATIVE) if (t.includes(kw)) s += pts;
+  return Math.min(100, Math.max(0, s));
+}
+
+function ClaimScoreDot({ score }: { score: number }) {
+  const color = score >= 80 ? '#16A34A' : score >= 65 ? '#2563EB' : score >= 50 ? '#D97706' : '#DC2626';
+  return (
+    <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '3px', flexShrink: 0 }}>
+      <span style={{ width: 7, height: 7, borderRadius: '50%', background: color, display: 'inline-block' }} />
+      <span style={{ fontSize: '9px', fontWeight: 700, color }}>{score}</span>
+    </span>
+  );
+}
+
 function WellnessBadge({ score }: { score: number }) {
   const color = score >= 80 ? '#16A34A' : score >= 65 ? '#2563EB' : score >= 50 ? '#D97706' : '#DC2626';
   const label = score >= 80 ? 'Alta' : score >= 65 ? 'Buena' : score >= 50 ? 'Media' : 'Baja';
@@ -137,8 +155,9 @@ function ExpandPanel({
             <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Claims del producto</p>
             <div className="flex flex-col gap-1.5">
               {project.claims.map((c, i) => (
-                <span key={i} className="inline-block w-fit text-[10.5px] font-semibold bg-slate-800 text-white px-2.5 py-1 rounded-md">
-                  {c}
+                <span key={i} className="flex items-center justify-between gap-3 text-[10.5px] font-semibold bg-slate-800 text-white px-2.5 py-1 rounded-md">
+                  <span>{c}</span>
+                  <ClaimScoreDot score={claimScore(c)} />
                 </span>
               ))}
             </div>
