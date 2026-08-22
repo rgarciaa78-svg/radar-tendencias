@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
-import { ChevronDown, ChevronRight, CheckSquare, Square, Upload } from 'lucide-react';
+import { ChevronDown, ChevronRight, CheckSquare, Square, Upload, FileUp, Trash2, RotateCcw, AlertCircle } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { projectsData, type Project } from '../data/projects';
 
 // Para conectar Google Sheets en el futuro, pega aquí el URL CSV publicado:
@@ -84,6 +85,84 @@ function WellnessBadge({ score }: { score: number }) {
       <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}>/100 · {label} alineación wellness</span>
     </span>
   );
+}
+
+// ── Excel import ──────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'proyectos-custom-data';
+
+function fmtDate(d: unknown): string {
+  if (d instanceof Date) {
+    const m = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    return `${m[d.getMonth()]}-${String(d.getFullYear()).slice(2)}`;
+  }
+  return d ? String(d).trim() : '';
+}
+
+function parseMarca(familia: string): Project['marca'] {
+  const u = familia.toUpperCase();
+  if (u.includes('STRAAL')) return 'straal';
+  if (u.includes('B&D') || u.includes('B AND D') || u.includes('BD')) return 'byd';
+  return 'tigo';
+}
+
+function parseExcelFile(buffer: ArrayBuffer): Project[] {
+  const wb = XLSX.read(buffer, { type: 'array', cellDates: true });
+  const sheetName = wb.SheetNames.includes('Hoja2') ? 'Hoja2' : wb.SheetNames[0];
+  const ws = wb.Sheets[sheetName];
+  const rows = XLSX.utils.sheet_to_json<(string | number | boolean | Date | null)[]>(ws, { header: 1, defval: null });
+
+  const projects: Project[] = [];
+  const counter: Record<string, number> = { tigo: 0, straal: 0, byd: 0 };
+  let currentFamilia = '';
+  let currentMarca: Project['marca'] = 'tigo';
+  let inData = false;
+  let skipNext = false; // skip stage-name row right after header
+
+  for (const row of rows) {
+    // Detect header row by presence of FAMILIA and PROYECTO columns
+    if (!inData) {
+      if (row && row.some(c => String(c ?? '').toUpperCase().trim() === 'FAMILIA') &&
+                 row.some(c => String(c ?? '').toUpperCase().trim() === 'PROYECTO')) {
+        inData = true;
+        skipNext = true;
+      }
+      continue;
+    }
+    if (skipNext) { skipNext = false; continue; }
+    if (!row || !row.some(v => v !== null && v !== undefined && v !== '')) continue;
+
+    const familia = row[3];
+    const nombre  = row[4];
+    const objetivo = row[5];
+    const claimsRaw = row[6];
+    const etapas = Array.from({ length: 11 }, (_, k) => Boolean(row[7 + k]));
+    const fecha  = row[20];
+
+    if (familia) {
+      currentFamilia = String(familia).trim()
+        .replace(/\n/g, ' ').replace(/  +/g, ' ');
+      currentMarca = parseMarca(currentFamilia);
+    }
+    if (!nombre) continue;
+
+    const marca = currentMarca;
+    counter[marca] = (counter[marca] ?? 0) + 1;
+    const prefix = marca === 'straal' ? 's' : marca === 'byd' ? 'b' : 't';
+    const id = `${prefix}${String(counter[marca]).padStart(2, '0')}`;
+
+    const claims = claimsRaw
+      ? String(claimsRaw).split(',').map(c => c.trim().replace(/\n/g, ' ')).filter(Boolean)
+          .map(c => c.charAt(0).toUpperCase() + c.slice(1))
+      : [];
+
+    projects.push({
+      id, marca, familia: currentFamilia,
+      nombre: String(nombre).trim().replace(/\n/g, ' '),
+      objetivo: objetivo ? String(objetivo).replace(/\n/g, ' ').trim() : '',
+      claims, fecha: fmtDate(fecha), etapas, ingredientes: '',
+    });
+  }
+  return projects;
 }
 
 const STAGES = [
@@ -286,12 +365,13 @@ function ExpandPanel({
 
 // ── Project table ─────────────────────────────────────────────────────────────
 function ProjectTable({
-  title, projects, photos, onPhotoChange,
+  title, projects, photos, onPhotoChange, onDelete,
 }: {
   title: string;
   projects: Project[];
   photos: Record<string, string>;
   onPhotoChange: (id: string, url: string) => void;
+  onDelete: (id: string) => void;
 }) {
   const [expanded, setExpanded] = useState<string | null>(null);
   if (projects.length === 0) return null;
@@ -310,7 +390,7 @@ function ProjectTable({
         {/* Header */}
         <div
           className="grid text-[10px] font-bold uppercase tracking-widest text-slate-400 bg-slate-50 border-b border-slate-200"
-          style={{ gridTemplateColumns: '2rem 1fr 120px 5.5rem repeat(11, 1.75rem) 3.5rem' }}
+          style={{ gridTemplateColumns: '2rem 1fr 120px 5.5rem repeat(11, 1.75rem) 3.5rem 2.5rem' }}
         >
           <div />
           <div className="px-4 py-2.5">Producto</div>
@@ -320,6 +400,7 @@ function ProjectTable({
             <div key={i} className="py-2.5 text-center" title={s}>{i + 1}</div>
           ))}
           <div className="py-2.5 text-center">%</div>
+          <div />
         </div>
 
         {/* Rows */}
@@ -331,45 +412,58 @@ function ProjectTable({
           return (
             <div
               key={p.id}
-              className={`grid items-center cursor-pointer border-b border-slate-100 last:border-0 transition-colors ${open ? 'bg-blue-50' : 'hover:bg-slate-50'}`}
-              style={{ gridTemplateColumns: '2rem 1fr 120px 5.5rem repeat(11, 1.75rem) 3.5rem' }}
-              onClick={() => setExpanded(open ? null : p.id)}
+              className={`grid items-center border-b border-slate-100 last:border-0 transition-colors ${open ? 'bg-blue-50' : 'hover:bg-slate-50'}`}
+              style={{ gridTemplateColumns: '2rem 1fr 120px 5.5rem repeat(11, 1.75rem) 3.5rem 2.5rem' }}
             >
-              <div className="flex items-center justify-center py-3 pl-2">
-                {open
-                  ? <ChevronDown  size={13} className="text-blue-500" />
-                  : <ChevronRight size={13} className="text-slate-400" />
-                }
-              </div>
-
-              <div className="px-4 py-3 flex items-center gap-2 min-w-0">
-                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded shrink-0 ${BRAND_BADGE[p.marca]}`}>
-                  {BRAND_LABEL[p.marca]}
-                </span>
-                <span className="text-xs font-semibold text-slate-800 truncate">{p.nombre}</span>
-              </div>
-
-              <div className="py-3 text-xs text-slate-500 truncate pr-2">{p.familia}</div>
-              <div className="py-3 text-xs text-slate-500">{p.fecha}</div>
-
-              {p.etapas.map((v, i) => (
-                <div key={i} className="flex items-center justify-center">
-                  {v ? (
-                    <div className="w-3.5 h-3.5 rounded-sm bg-green-500 flex items-center justify-center">
-                      <svg viewBox="0 0 10 8" className="w-2 h-2 fill-white">
-                        <path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </div>
-                  ) : (
-                    <div className="w-3.5 h-3.5 rounded-sm border border-slate-300" />
-                  )}
+              {/* Expandir — toda la fila excepto el botón eliminar */}
+              <div className="contents cursor-pointer" onClick={() => setExpanded(open ? null : p.id)}>
+                <div className="flex items-center justify-center py-3 pl-2">
+                  {open
+                    ? <ChevronDown  size={13} className="text-blue-500" />
+                    : <ChevronRight size={13} className="text-slate-400" />
+                  }
                 </div>
-              ))}
 
-              <div className="text-center pr-2">
-                <span className={`text-[10px] font-bold ${
-                  pct === 100 ? 'text-green-600' : pct >= 50 ? 'text-blue-600' : 'text-slate-400'
-                }`}>{pct}%</span>
+                <div className="px-4 py-3 flex items-center gap-2 min-w-0">
+                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded shrink-0 ${BRAND_BADGE[p.marca]}`}>
+                    {BRAND_LABEL[p.marca]}
+                  </span>
+                  <span className="text-xs font-semibold text-slate-800 truncate">{p.nombre}</span>
+                </div>
+
+                <div className="py-3 text-xs text-slate-500 truncate pr-2">{p.familia}</div>
+                <div className="py-3 text-xs text-slate-500">{p.fecha}</div>
+
+                {p.etapas.map((v, i) => (
+                  <div key={i} className="flex items-center justify-center">
+                    {v ? (
+                      <div className="w-3.5 h-3.5 rounded-sm bg-green-500 flex items-center justify-center">
+                        <svg viewBox="0 0 10 8" className="w-2 h-2 fill-white">
+                          <path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
+                    ) : (
+                      <div className="w-3.5 h-3.5 rounded-sm border border-slate-300" />
+                    )}
+                  </div>
+                ))}
+
+                <div className="text-center pr-2">
+                  <span className={`text-[10px] font-bold ${
+                    pct === 100 ? 'text-green-600' : pct >= 50 ? 'text-blue-600' : 'text-slate-400'
+                  }`}>{pct}%</span>
+                </div>
+              </div>
+
+              {/* Botón eliminar */}
+              <div className="flex items-center justify-center">
+                <button
+                  onClick={(e) => { e.stopPropagation(); if (confirm(`¿Eliminar "${p.nombre}"?`)) onDelete(p.id); }}
+                  className="p-1 rounded hover:bg-red-50 text-slate-300 hover:text-red-500 transition-colors"
+                  title="Eliminar producto"
+                >
+                  <Trash2 size={13} />
+                </button>
               </div>
             </div>
           );
@@ -389,11 +483,23 @@ function ProjectTable({
 // ── Main ──────────────────────────────────────────────────────────────────────
 type FilterMarca = 'todas' | Project['marca'];
 
+function loadProjects(): Project[] {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return JSON.parse(saved) as Project[];
+  } catch { /* fallback */ }
+  return projectsData;
+}
+
 export function Proyectos() {
-  const [filter, setFilter] = useState<FilterMarca>('todas');
+  const [filter,   setFilter]   = useState<FilterMarca>('todas');
+  const [projects, setProjects] = useState<Project[]>(loadProjects);
+  const [importMsg, setImportMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null);
   const [photos, setPhotos] = useState<Record<string, string>>(() => {
     try { return JSON.parse(localStorage.getItem('proyectos-fotos') ?? '{}'); } catch { return {}; }
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const isCustom = localStorage.getItem(STORAGE_KEY) !== null;
 
   function handlePhotoChange(id: string, url: string) {
     const next = { ...photos, [id]: url };
@@ -401,7 +507,40 @@ export function Proyectos() {
     localStorage.setItem('proyectos-fotos', JSON.stringify(next));
   }
 
-  const all    = projectsData;
+  function handleDelete(id: string) {
+    const next = projects.filter(p => p.id !== id);
+    setProjects(next);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  }
+
+  function handleReset() {
+    if (!confirm('¿Restablecer datos originales? Se perderán los cambios importados.')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    setProjects(projectsData);
+    setImportMsg(null);
+  }
+
+  function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const parsed = parseExcelFile(ev.target!.result as ArrayBuffer);
+        if (parsed.length === 0) throw new Error('No se encontraron proyectos en el archivo.');
+        setProjects(parsed);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+        setImportMsg({ type: 'ok', text: `${parsed.length} proyectos cargados correctamente.` });
+      } catch (err) {
+        setImportMsg({ type: 'error', text: `Error al leer el archivo: ${(err as Error).message}` });
+      }
+      setTimeout(() => setImportMsg(null), 5000);
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  const all    = projects;
   const shown  = filter === 'todas' ? all : all.filter(p => p.marca === filter);
   const tigo   = shown.filter(p => p.marca === 'tigo');
   const straal = shown.filter(p => p.marca === 'straal');
@@ -409,13 +548,13 @@ export function Proyectos() {
 
   const totalDone  = all.reduce((s, p) => s + p.etapas.filter(Boolean).length, 0);
   const totalSteps = all.reduce((s, p) => s + p.etapas.length, 0);
-  const globalPct  = Math.round((totalDone / totalSteps) * 100);
+  const globalPct  = totalSteps > 0 ? Math.round((totalDone / totalSteps) * 100) : 0;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
         <div>
           <h2 className="text-xl font-bold text-slate-800">Proyectos I+D</h2>
           <p className="text-sm text-slate-400 mt-0.5">
@@ -444,6 +583,37 @@ export function Proyectos() {
         </div>
       </div>
 
+      {/* Barra de importación */}
+      <div className="flex flex-wrap items-center gap-2 mb-5">
+        <input ref={fileInputRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={handleImport} />
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-600 hover:bg-green-700 text-white transition-colors"
+        >
+          <FileUp size={13} />
+          Importar Excel
+        </button>
+        {isCustom && (
+          <button
+            onClick={handleReset}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 text-slate-600 hover:bg-slate-100 transition-colors"
+          >
+            <RotateCcw size={13} />
+            Restablecer datos originales
+          </button>
+        )}
+        {importMsg && (
+          <span className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg ${
+            importMsg.type === 'ok'
+              ? 'bg-green-50 text-green-700 border border-green-200'
+              : 'bg-red-50 text-red-700 border border-red-200'
+          }`}>
+            <AlertCircle size={12} />
+            {importMsg.text}
+          </span>
+        )}
+      </div>
+
       {/* Filtros */}
       <div className="flex gap-2 mb-6">
         {(['todas','tigo','straal','byd'] as FilterMarca[]).map(m => (
@@ -462,9 +632,9 @@ export function Proyectos() {
       </div>
 
       {/* Tablas */}
-      <ProjectTable title="TIGO"   projects={tigo}   photos={photos} onPhotoChange={handlePhotoChange} />
-      <ProjectTable title="Straal" projects={straal} photos={photos} onPhotoChange={handlePhotoChange} />
-      <ProjectTable title="B&D"    projects={byd}    photos={photos} onPhotoChange={handlePhotoChange} />
+      <ProjectTable title="TIGO"   projects={tigo}   photos={photos} onPhotoChange={handlePhotoChange} onDelete={handleDelete} />
+      <ProjectTable title="Straal" projects={straal} photos={photos} onPhotoChange={handlePhotoChange} onDelete={handleDelete} />
+      <ProjectTable title="B&D"    projects={byd}    photos={photos} onPhotoChange={handlePhotoChange} onDelete={handleDelete} />
 
     </div>
   );
