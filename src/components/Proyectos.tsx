@@ -138,15 +138,13 @@ function ExpandPanel({
   }
 
   return (
-    <div
-      className="grid gap-5 bg-slate-50/60 border-t border-slate-100"
-      style={{ gridTemplateColumns: '3fr 2fr', padding: '20px 24px 24px 72px' }}
-    >
+    <div className="flex flex-col md:grid gap-5 bg-slate-50/60 border-t border-slate-100 p-4 md:p-5 md:pl-16"
+         style={{ gridTemplateColumns: '3fr 2fr' }}>
       {/* ── Izquierda ── */}
       <div className="flex flex-col gap-3">
 
         {/* Foto + Claims */}
-        <div className="grid gap-4" style={{ gridTemplateColumns: '160px 1fr' }}>
+        <div className="flex flex-col md:grid gap-4" style={{ gridTemplateColumns: '160px 1fr' }}>
 
           {/* Foto */}
           <div>
@@ -154,13 +152,13 @@ function ExpandPanel({
               <img
                 src={photos[project.id]}
                 alt={project.nombre}
-                className="w-40 h-40 rounded-xl object-cover border border-slate-200 cursor-pointer"
+                className="w-full md:w-40 h-40 rounded-xl object-cover border border-slate-200 cursor-pointer"
                 onClick={() => fileRef.current?.click()}
               />
             ) : (
               <button
                 onClick={() => fileRef.current?.click()}
-                className="w-40 h-40 rounded-xl border-2 border-dashed border-slate-300 hover:border-blue-400 hover:bg-blue-50 flex flex-col items-center justify-center gap-2 transition-colors"
+                className="w-full md:w-40 h-40 rounded-xl border-2 border-dashed border-slate-300 hover:border-blue-400 hover:bg-blue-50 flex flex-col items-center justify-center gap-2 transition-colors"
               >
                 <Upload size={20} className="text-slate-400" />
                 <span className="text-[11px] font-semibold text-slate-400">Subir foto</span>
@@ -199,7 +197,7 @@ function ExpandPanel({
         </div>
 
         {/* Ingredientes + Nutricional lado a lado */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 
           <div className="rounded-xl border border-slate-200 overflow-hidden bg-white">
             <div className="px-3.5 py-2 bg-slate-800 text-white text-[10px] font-bold uppercase tracking-wider flex items-center">
@@ -301,7 +299,7 @@ function ProjectTable({
   return (
     <section className="mb-8">
       <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3 px-1">{title}</h3>
-      <div className="rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm">
+      <div className="rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm overflow-x-auto">
 
         {/* Header */}
         <div
