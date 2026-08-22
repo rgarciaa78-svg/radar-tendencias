@@ -116,20 +116,17 @@ function parseExcelFile(buffer: ArrayBuffer): Project[] {
   let currentFamilia = '';
   let currentMarca: Project['marca'] = 'tigo';
   let inData = false;
-  let skipNext = false; // skip stage-name row right after header
+  let skipNext = false;
 
   for (const row of rows) {
-    // Detect header row by presence of FAMILIA and PROYECTO columns
-    if (!inData) {
-      if (row && row.some(c => String(c ?? '').toUpperCase().trim() === 'FAMILIA') &&
-                 row.some(c => String(c ?? '').toUpperCase().trim() === 'PROYECTO')) {
-        inData = true;
-        skipNext = true;
-      }
-      continue;
-    }
-    if (skipNext) { skipNext = false; continue; }
     if (!row || !row.some(v => v !== null && v !== undefined && v !== '')) continue;
+
+    // Detect header row (FAMILIA + PROYECTO) — can appear multiple times, always skip it and the next row
+    const isHeader = row.some(c => String(c ?? '').toUpperCase().trim() === 'FAMILIA') &&
+                     row.some(c => String(c ?? '').toUpperCase().trim() === 'PROYECTO');
+    if (isHeader) { inData = true; skipNext = true; continue; }
+    if (skipNext) { skipNext = false; continue; }
+    if (!inData) continue;
 
     const familia = row[3];
     const nombre  = row[4];
@@ -486,7 +483,13 @@ type FilterMarca = 'todas' | Project['marca'];
 function loadProjects(): Project[] {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) return JSON.parse(saved) as Project[];
+    if (saved) {
+      const parsed = JSON.parse(saved) as Project[];
+      // Sanity check: discard if any project has 'FAMILIA' or 'PROYECTO' as nombre (parser bug artifact)
+      const corrupt = parsed.some(p => ['FAMILIA','PROYECTO','OBJETIVO','CLAIMS'].includes(p.nombre?.toUpperCase().trim()));
+      if (corrupt) { localStorage.removeItem(STORAGE_KEY); return projectsData; }
+      return parsed;
+    }
   } catch { /* fallback */ }
   return projectsData;
 }
