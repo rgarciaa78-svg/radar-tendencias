@@ -5,6 +5,45 @@ import { projectsData, type Project } from '../data/projects';
 // Para conectar Google Sheets en el futuro, pega aquí el URL CSV publicado:
 // const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/.../export?format=csv';
 
+// ── Wellness score ────────────────────────────────────────────────────────────
+// Compara claims e ingredientes contra tendencias globales de wellness (0-100)
+const WELLNESS_POSITIVE = [
+  ['sin azúcar añadida', 12], ['sin azúcar', 10], ['sin octógonos', 10],
+  ['probióticos', 9], ['prebióticos', 8], ['sin conservantes', 8],
+  ['deslactosado', 6], ['sin colorantes', 6], ['sin gluten', 6],
+  ['omega-3', 8], ['colágeno', 6], ['vitamina', 5], ['alto en proteína', 7],
+  ['proteína', 5], ['calcio', 4], ['fibra', 6], ['natural', 5],
+  ['descremado', 5], ['0% grasa', 5], ['sin aditivos', 7], ['vegano', 6],
+  ['plant-based', 6], ['liofilizado', 5], ['andino', 4], ['peruano', 3],
+] as [string, number][];
+
+const WELLNESS_NEGATIVE = [
+  ['azúcar refinada', -10], ['conservante', -8], ['colorante artificial', -8],
+  ['saborizante artificial', -6], ['aceite de palma', -7],
+] as [string, number][];
+
+function wellnessScore(claims: string[], ingredientes: string): number {
+  const text = [...claims, ingredientes].join(' ').toLowerCase();
+  let score = 45;
+  for (const [kw, pts] of WELLNESS_POSITIVE) if (text.includes(kw)) score += pts;
+  for (const [kw, pts] of WELLNESS_NEGATIVE) if (text.includes(kw)) score += pts;
+  return Math.min(100, Math.max(0, score));
+}
+
+function WellnessBadge({ score }: { score: number }) {
+  const color = score >= 80 ? '#16A34A' : score >= 65 ? '#2563EB' : score >= 50 ? '#D97706' : '#DC2626';
+  const label = score >= 80 ? 'Alta' : score >= 65 ? 'Buena' : score >= 50 ? 'Media' : 'Baja';
+  return (
+    <span style={{
+      marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '5px',
+      background: 'rgba(255,255,255,0.12)', borderRadius: '6px', padding: '2px 8px',
+    }}>
+      <span style={{ fontSize: '11px', fontWeight: 700, color }}>{score}</span>
+      <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}>/100 · {label} alineación wellness</span>
+    </span>
+  );
+}
+
 const STAGES = [
   'Diseño de nuevo producto · Brief',
   'Aprobación de prototipo laboratorio',
@@ -43,8 +82,9 @@ function ExpandPanel({
   onPhotoChange: (id: string, url: string) => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
-  const done = project.etapas.filter(Boolean).length;
-  const pct  = Math.round((done / project.etapas.length) * 100);
+  const done  = project.etapas.filter(Boolean).length;
+  const pct   = Math.round((done / project.etapas.length) * 100);
+  const wscore = wellnessScore(project.claims, project.ingredientes);
 
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -110,8 +150,9 @@ function ExpandPanel({
         <div className="grid grid-cols-2 gap-3">
 
           <div className="rounded-xl border border-slate-200 overflow-hidden bg-white">
-            <div className="px-3.5 py-2 bg-slate-800 text-white text-[10px] font-bold uppercase tracking-wider">
+            <div className="px-3.5 py-2 bg-slate-800 text-white text-[10px] font-bold uppercase tracking-wider flex items-center">
               Lista de ingredientes
+              <WellnessBadge score={wscore} />
             </div>
             <p className="px-3.5 py-3 text-xs text-slate-500 leading-relaxed italic min-h-[60px]">
               {project.ingredientes || 'Pendiente confirmar con I+D'}
@@ -119,8 +160,9 @@ function ExpandPanel({
           </div>
 
           <div className="rounded-xl border border-slate-200 overflow-hidden bg-white">
-            <div className="px-3.5 py-2 bg-slate-800 text-white text-[10px] font-bold uppercase tracking-wider">
+            <div className="px-3.5 py-2 bg-slate-800 text-white text-[10px] font-bold uppercase tracking-wider flex items-center">
               Tabla nutricional
+              <WellnessBadge score={wscore} />
             </div>
             <table className="w-full text-xs border-collapse">
               <thead>
