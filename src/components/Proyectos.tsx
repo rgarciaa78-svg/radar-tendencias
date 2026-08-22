@@ -299,7 +299,9 @@ function ProjectTable({
   return (
     <section className="mb-8">
       <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3 px-1">{title}</h3>
-      <div className="rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm overflow-x-auto">
+      <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-x-auto">
+        <div style={{ minWidth: '700px' }}>
 
         {/* Header */}
         <div
@@ -373,6 +375,8 @@ function ProjectTable({
             </div>
           );
         })}
+        </div>
+        </div>
       </div>
     </section>
   );
