@@ -60,22 +60,6 @@ function calcIVP(claims: string[]): number {
   return Math.min(100, Math.max(0, Math.round((raw / 120) * 100)));
 }
 
-function IVPBadge({ ivp }: { ivp: number }) {
-  const color  = ivp >= 75 ? '#16A34A' : ivp >= 55 ? '#2563EB' : ivp >= 35 ? '#D97706' : '#DC2626';
-  const label  = ivp >= 75 ? 'Alto valor' : ivp >= 55 ? 'Buen valor' : ivp >= 35 ? 'Valor medio' : 'Valor bajo';
-  return (
-    <span style={{
-      marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '5px',
-      background: 'rgba(255,255,255,0.12)', borderRadius: '6px', padding: '2px 9px',
-    }}>
-      <span style={{ fontSize: '12px', fontWeight: 800, color }}>{ivp}</span>
-      <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.55)', fontWeight: 600 }}>
-        /100 · IVP · {label}
-      </span>
-    </span>
-  );
-}
-
 // Score wellness para headers de ingredientes / nutricional
 const WELLNESS_POSITIVE = CLAIM_PREMIUM;
 const WELLNESS_NEGATIVE = CLAIM_NEGATIVE;
