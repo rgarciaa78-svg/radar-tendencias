@@ -296,12 +296,16 @@ function ProjectTable({
   const [expanded, setExpanded] = useState<string | null>(null);
   if (projects.length === 0) return null;
 
+  const expandedProject = expanded ? projects.find(p => p.id === expanded) ?? null : null;
+
   return (
     <section className="mb-8">
       <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3 px-1">{title}</h3>
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
+
+        {/* Scrollable table — only rows, no expand panel inside */}
         <div className="overflow-x-auto">
-        <div style={{ minWidth: '700px' }}>
+        <div style={{ minWidth: '960px' }}>
 
         {/* Header */}
         <div
@@ -325,58 +329,58 @@ function ProjectTable({
           const open = expanded === p.id;
 
           return (
-            <div key={p.id} className="border-b border-slate-100 last:border-0">
-              <div
-                className="grid items-center cursor-pointer hover:bg-slate-50 transition-colors"
-                style={{ gridTemplateColumns: '2rem 1fr 120px 5.5rem repeat(11, 1.75rem) 3.5rem' }}
-                onClick={() => setExpanded(open ? null : p.id)}
-              >
-                <div className="flex items-center justify-center py-3 pl-2">
-                  {open
-                    ? <ChevronDown  size={13} className="text-slate-400" />
-                    : <ChevronRight size={13} className="text-slate-400" />
-                  }
-                </div>
-
-                <div className="px-4 py-3 flex items-center gap-2 min-w-0">
-                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded shrink-0 ${BRAND_BADGE[p.marca]}`}>
-                    {BRAND_LABEL[p.marca]}
-                  </span>
-                  <span className="text-xs font-semibold text-slate-800 truncate">{p.nombre}</span>
-                </div>
-
-                <div className="py-3 text-xs text-slate-500 truncate pr-2">{p.familia}</div>
-                <div className="py-3 text-xs text-slate-500">{p.fecha}</div>
-
-                {p.etapas.map((v, i) => (
-                  <div key={i} className="flex items-center justify-center">
-                    {v ? (
-                      <div className="w-3.5 h-3.5 rounded-sm bg-green-500 flex items-center justify-center">
-                        <svg viewBox="0 0 10 8" className="w-2 h-2 fill-white">
-                          <path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      </div>
-                    ) : (
-                      <div className="w-3.5 h-3.5 rounded-sm border border-slate-300" />
-                    )}
-                  </div>
-                ))}
-
-                <div className="text-center pr-2">
-                  <span className={`text-[10px] font-bold ${
-                    pct === 100 ? 'text-green-600' : pct >= 50 ? 'text-blue-600' : 'text-slate-400'
-                  }`}>{pct}%</span>
-                </div>
+            <div
+              key={p.id}
+              className={`grid items-center cursor-pointer border-b border-slate-100 last:border-0 transition-colors ${open ? 'bg-blue-50' : 'hover:bg-slate-50'}`}
+              style={{ gridTemplateColumns: '2rem 1fr 120px 5.5rem repeat(11, 1.75rem) 3.5rem' }}
+              onClick={() => setExpanded(open ? null : p.id)}
+            >
+              <div className="flex items-center justify-center py-3 pl-2">
+                {open
+                  ? <ChevronDown  size={13} className="text-blue-500" />
+                  : <ChevronRight size={13} className="text-slate-400" />
+                }
               </div>
 
-              {open && (
-                <ExpandPanel project={p} photos={photos} onPhotoChange={onPhotoChange} />
-              )}
+              <div className="px-4 py-3 flex items-center gap-2 min-w-0">
+                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded shrink-0 ${BRAND_BADGE[p.marca]}`}>
+                  {BRAND_LABEL[p.marca]}
+                </span>
+                <span className="text-xs font-semibold text-slate-800 truncate">{p.nombre}</span>
+              </div>
+
+              <div className="py-3 text-xs text-slate-500 truncate pr-2">{p.familia}</div>
+              <div className="py-3 text-xs text-slate-500">{p.fecha}</div>
+
+              {p.etapas.map((v, i) => (
+                <div key={i} className="flex items-center justify-center">
+                  {v ? (
+                    <div className="w-3.5 h-3.5 rounded-sm bg-green-500 flex items-center justify-center">
+                      <svg viewBox="0 0 10 8" className="w-2 h-2 fill-white">
+                        <path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                  ) : (
+                    <div className="w-3.5 h-3.5 rounded-sm border border-slate-300" />
+                  )}
+                </div>
+              ))}
+
+              <div className="text-center pr-2">
+                <span className={`text-[10px] font-bold ${
+                  pct === 100 ? 'text-green-600' : pct >= 50 ? 'text-blue-600' : 'text-slate-400'
+                }`}>{pct}%</span>
+              </div>
             </div>
           );
         })}
         </div>
         </div>
+
+        {/* Expand panel — OUTSIDE the scrollable area, full width */}
+        {expandedProject && (
+          <ExpandPanel project={expandedProject} photos={photos} onPhotoChange={onPhotoChange} />
+        )}
       </div>
     </section>
   );
@@ -411,7 +415,7 @@ export function Proyectos() {
     <div className="p-6 max-w-7xl mx-auto">
 
       {/* Header */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
         <div>
           <h2 className="text-xl font-bold text-slate-800">Proyectos I+D</h2>
           <p className="text-sm text-slate-400 mt-0.5">
