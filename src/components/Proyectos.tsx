@@ -138,9 +138,10 @@ function parseExcelFile(XLSX: any, buffer: ArrayBuffer): Project[] {
     const fecha  = row[20];
 
     if (familia) {
-      currentFamilia = String(familia).trim()
-        .replace(/\n/g, ' ').replace(/  +/g, ' ');
-      currentMarca = parseMarca(currentFamilia);
+      const raw = String(familia).trim().replace(/\n/g, ' ').replace(/  +/g, ' ');
+      // Title-case for familia: capitalize each word
+      currentFamilia = raw.toLowerCase().replace(/\b\w/g, ch => ch.toUpperCase());
+      currentMarca = parseMarca(raw);
     }
     if (!nombre) continue;
 
@@ -149,17 +150,22 @@ function parseExcelFile(XLSX: any, buffer: ArrayBuffer): Project[] {
     const prefix = marca === 'straal' ? 's' : marca === 'byd' ? 'b' : 't';
     const id = `${prefix}${String(counter[marca]).padStart(2, '0')}`;
 
+    // Sentence case: lowercase everything, capitalize first letter
+    const toSentence = (s: string) => {
+      const clean = s.replace(/\n/g, ' ').replace(/  +/g, ' ').trim().toLowerCase();
+      return clean.charAt(0).toUpperCase() + clean.slice(1);
+    };
+
     const claims = claimsRaw
       ? String(claimsRaw).split(',')
-          .map(c => c.trim().replace(/\n/g, ' ').replace(/  +/g, ' '))
+          .map(c => toSentence(c))
           .filter(Boolean)
-          .map(c => { const l = c.toLowerCase(); return l.charAt(0).toUpperCase() + l.slice(1); })
       : [];
 
     projects.push({
       id, marca, familia: currentFamilia,
-      nombre: String(nombre).trim().replace(/\n/g, ' '),
-      objetivo: objetivo ? String(objetivo).replace(/\n/g, ' ').trim() : '',
+      nombre:  toSentence(String(nombre)),
+      objetivo: objetivo ? toSentence(String(objetivo)) : '',
       claims, fecha: fmtDate(fecha), etapas, ingredientes: '',
     });
   }
