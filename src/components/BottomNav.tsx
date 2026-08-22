@@ -1,4 +1,4 @@
-import { LayoutDashboard, Rocket, TrendingUp, Globe, Heart, Megaphone } from 'lucide-react';
+import { LayoutDashboard, Rocket, TrendingUp, Globe, Heart, Megaphone, FlaskConical } from 'lucide-react';
 import { useTrendStore } from '../store/useTrendStore';
 
 const NAV = [
@@ -8,6 +8,7 @@ const NAV = [
   { view: 'globales',     label: 'Globales',     icon: Globe },
   { view: 'campañas',     label: 'Campañas',     icon: Megaphone },
   { view: 'favoritos',    label: 'Favoritos',    icon: Heart },
+  { view: 'proyectos',   label: 'Proyectos',    icon: FlaskConical },
 ] as const;
 
 export function BottomNav() {
