@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { ChevronDown, ChevronRight, CheckSquare, Square, Upload, FileUp, Trash2, RotateCcw, AlertCircle, X } from 'lucide-react';
-import { projectsData, type Project } from '../data/projects';
+import { projectsData, emptyNutricional, type Project, type NutricionalRow } from '../data/projects';
 
 // Para conectar Google Sheets en el futuro, pega aquí el URL CSV publicado:
 // const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/.../export?format=csv';
@@ -162,11 +162,23 @@ function parseExcelFile(XLSX: any, buffer: ArrayBuffer): Project[] {
           .filter(Boolean)
       : [];
 
+    const ingredientes = row[21] ? String(row[21]).trim() : '';
+    const nutricional: NutricionalRow = {
+      energia:       row[22] != null ? String(row[22]).trim() : '',
+      proteinas:     row[23] != null ? String(row[23]).trim() : '',
+      grasaTotal:    row[24] != null ? String(row[24]).trim() : '',
+      grasaSat:      row[25] != null ? String(row[25]).trim() : '',
+      carbohidratos: row[26] != null ? String(row[26]).trim() : '',
+      azucares:      row[27] != null ? String(row[27]).trim() : '',
+      sodio:         row[28] != null ? String(row[28]).trim() : '',
+      calcio:        row[29] != null ? String(row[29]).trim() : '',
+    };
+
     projects.push({
       id, marca, familia: currentFamilia,
       nombre:  toSentence(String(nombre)),
       objetivo: objetivo ? toSentence(String(objetivo)) : '',
-      claims, fecha: fmtDate(fecha), etapas, ingredientes: '',
+      claims, fecha: fmtDate(fecha), etapas, ingredientes, nutricional,
     });
   }
   // Final filter: remove any row where nombre looks like a header label
@@ -204,18 +216,47 @@ const BRAND_FILTER_ACTIVE: Record<string, string> = {
 
 // ── Expand panel ──────────────────────────────────────────────────────────────
 function ExpandPanel({
-  project, photos, onPhotoChange, onClose,
+  project, photos, onPhotoChange, onClose, onUpdate,
 }: {
   project: Project;
   photos: Record<string, string>;
   onPhotoChange: (id: string, url: string) => void;
   onClose: () => void;
+  onUpdate: (updated: Project) => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
-  const done   = project.etapas.filter(Boolean).length;
-  const pct    = Math.round((done / project.etapas.length) * 100);
-  const ivp    = calcIVP(project.claims);
-  const wscore = wellnessScore(project.claims, project.ingredientes);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState<Project>(project);
+  const [newClaim, setNewClaim] = useState('');
+
+  const p    = editing ? draft : project;
+  const done = p.etapas.filter(Boolean).length;
+  const pct  = Math.round((done / p.etapas.length) * 100);
+  const ivp  = calcIVP(p.claims);
+  const wscore = wellnessScore(p.claims, p.ingredientes);
+
+  function startEdit() { setDraft(project); setEditing(true); }
+  function cancelEdit() { setEditing(false); setNewClaim(''); }
+  function saveEdit() {
+    onUpdate(draft);
+    setEditing(false);
+    setNewClaim('');
+  }
+  function addClaim() {
+    const c = newClaim.trim();
+    if (!c) return;
+    setDraft(d => ({ ...d, claims: [...d.claims, c] }));
+    setNewClaim('');
+  }
+  function removeClaim(i: number) {
+    setDraft(d => ({ ...d, claims: d.claims.filter((_, idx) => idx !== i) }));
+  }
+  function editClaim(i: number, val: string) {
+    setDraft(d => ({ ...d, claims: d.claims.map((c, idx) => idx === i ? val : c) }));
+  }
+  function setNut(key: keyof NutricionalRow, val: string) {
+    setDraft(d => ({ ...d, nutricional: { ...d.nutricional, [key]: val } }));
+  }
 
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -224,6 +265,8 @@ function ExpandPanel({
     reader.onload = () => onPhotoChange(project.id, reader.result as string);
     reader.readAsDataURL(file);
   }
+
+  const nut = p.nutricional ?? emptyNutricional();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(15,23,42,0.55)' }} onClick={onClose}>
@@ -243,10 +286,24 @@ function ExpandPanel({
             project.marca === 'tigo' ? 'bg-blue-600 text-white' :
             project.marca === 'straal' ? 'bg-orange-500 text-white' : 'bg-violet-600 text-white'
           }`}>{project.marca === 'tigo' ? 'TIGO' : project.marca === 'straal' ? 'Straal' : 'B&D'}</span>
-          <div>
+          <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-slate-800 leading-snug">{project.nombre}</p>
             <p className="text-[11px] text-slate-400">{project.familia} · {project.fecha}</p>
           </div>
+          {!editing ? (
+            <button onClick={startEdit} className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-600 text-xs font-semibold transition-colors">
+              ✏️ Editar
+            </button>
+          ) : (
+            <div className="shrink-0 flex gap-2">
+              <button onClick={cancelEdit} className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold transition-colors">
+                Cancelar
+              </button>
+              <button onClick={saveEdit} className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-colors">
+                Guardar
+              </button>
+            </div>
+          )}
         </div>
 
     <div className="flex flex-col md:grid gap-5 bg-slate-50/60 p-4 md:p-5"
@@ -262,7 +319,7 @@ function ExpandPanel({
             {photos[project.id] ? (
               <img
                 src={photos[project.id]}
-                alt={project.nombre}
+                alt={p.nombre}
                 className="w-full md:w-40 h-40 rounded-xl object-cover border border-slate-200 cursor-pointer"
                 onClick={() => fileRef.current?.click()}
               />
@@ -283,8 +340,8 @@ function ExpandPanel({
 
           {/* Objetivo + Claims */}
           <div>
-            {project.objetivo && (
-              <p className="text-xs text-slate-500 mb-3 leading-relaxed">{project.objetivo}</p>
+            {p.objetivo && (
+              <p className="text-xs text-slate-500 mb-3 leading-relaxed">{p.objetivo}</p>
             )}
             <div className="flex items-center mb-2">
               <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Claims del producto</p>
@@ -296,13 +353,38 @@ function ExpandPanel({
                 <span style={{ fontSize: '9px', color: '#94a3b8', fontWeight: 600 }}>/100 IVP</span>
               </span>
             </div>
-            <div className="flex flex-col gap-1.5">
-              {project.claims.map((c, i) => (
-                <span key={i} className="inline-block w-fit text-[10.5px] font-semibold bg-slate-800 text-white px-2.5 py-1 rounded-md">
-                  {c}
-                </span>
-              ))}
-            </div>
+            {!editing ? (
+              <div className="flex flex-col gap-1.5">
+                {p.claims.map((c, i) => (
+                  <span key={i} className="inline-block w-fit text-[10.5px] font-semibold bg-slate-800 text-white px-2.5 py-1 rounded-md">
+                    {c}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1.5">
+                {draft.claims.map((c, i) => (
+                  <div key={i} className="flex items-center gap-1.5">
+                    <input
+                      value={c}
+                      onChange={e => editClaim(i, e.target.value)}
+                      className="flex-1 text-xs border border-slate-300 rounded-md px-2 py-1 focus:outline-none focus:border-blue-400"
+                    />
+                    <button onClick={() => removeClaim(i)} className="text-red-400 hover:text-red-600 text-xs px-1 font-bold">✕</button>
+                  </div>
+                ))}
+                <div className="flex items-center gap-1.5 mt-1">
+                  <input
+                    value={newClaim}
+                    onChange={e => setNewClaim(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && addClaim()}
+                    placeholder="Nuevo claim…"
+                    className="flex-1 text-xs border border-dashed border-blue-300 rounded-md px-2 py-1 focus:outline-none focus:border-blue-500 bg-blue-50"
+                  />
+                  <button onClick={addClaim} className="text-blue-600 hover:text-blue-800 text-xs px-2 py-1 font-bold bg-blue-50 rounded-md">+ Agregar</button>
+                </div>
+              </div>
+            )}
           </div>
 
         </div>
@@ -315,9 +397,19 @@ function ExpandPanel({
               Lista de ingredientes
               <WellnessBadge score={wscore} />
             </div>
-            <p className="px-3.5 py-3 text-xs text-slate-500 leading-relaxed italic min-h-[60px]">
-              {project.ingredientes || 'Pendiente confirmar con I+D'}
-            </p>
+            {!editing ? (
+              <p className="px-3.5 py-3 text-xs text-slate-500 leading-relaxed italic min-h-[60px]">
+                {p.ingredientes || 'Pendiente confirmar con I+D'}
+              </p>
+            ) : (
+              <textarea
+                rows={4}
+                value={draft.ingredientes}
+                onChange={e => setDraft(d => ({ ...d, ingredientes: e.target.value }))}
+                placeholder="Ej: Leche descremada, Cultivos lácticos, Sucralosa…"
+                className="w-full px-3.5 py-3 text-xs text-slate-700 leading-relaxed resize-y focus:outline-none focus:ring-1 focus:ring-blue-300"
+              />
+            )}
           </div>
 
           <div className="rounded-xl border border-slate-200 overflow-hidden bg-white">
@@ -328,34 +420,48 @@ function ExpandPanel({
             <table className="w-full text-xs border-collapse">
               <thead>
                 <tr className="bg-slate-50">
-                  <td className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wide">Por porción (100 g)</td>
-                  <td className="px-2 py-1.5 text-[10px] font-bold text-slate-400 text-center">% VD*</td>
+                  <td className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wide">Por 100 g</td>
                   <td className="px-3 py-1.5 text-[10px] font-bold text-slate-400 text-right">Valor</td>
                 </tr>
               </thead>
               <tbody>
-                {[
-                  ['Energía',        '',    '— kcal', false],
-                  ['Proteínas',      '—%',  '— g',    false],
-                  ['Grasa total',    '—%',  '— g',    false],
-                  ['Grasa saturada', '—%',  '— g',    true],
-                  ['Carbohidratos',  '—%',  '— g',    false],
-                  ['Azúcares',       '',    '— g',    true],
-                  ['Sodio',          '—%',  '— mg',   false],
-                  ['Calcio',         '—%',  '— mg',   false],
-                ].map(([name, vd, val, sub], i) => (
-                  <tr key={i} className="border-t border-slate-100">
+                {([
+                  ['Energía',        'energia',       'kcal', false],
+                  ['Proteínas',      'proteinas',     'g',    false],
+                  ['Grasa total',    'grasaTotal',    'g',    false],
+                  ['Grasa saturada', 'grasaSat',      'g',    true ],
+                  ['Carbohidratos',  'carbohidratos', 'g',    false],
+                  ['Azúcares',       'azucares',      'g',    true ],
+                  ['Sodio',          'sodio',         'mg',   false],
+                  ['Calcio',         'calcio',        'mg',   false],
+                ] as [string, keyof NutricionalRow, string, boolean][]).map(([name, key, unit, sub]) => (
+                  <tr key={key} className="border-t border-slate-100">
                     <td className="px-3 py-1 text-slate-700" style={sub ? { paddingLeft: '22px', fontWeight: 400, fontSize: '11px', color: '#94a3b8' } : { fontWeight: 600 }}>
                       {name}
                     </td>
-                    <td className="px-2 py-1 text-center text-slate-400">{vd}</td>
-                    <td className="px-3 py-1 text-right font-semibold text-slate-600">{val}</td>
+                    <td className="px-3 py-1 text-right">
+                      {!editing ? (
+                        <span className="font-semibold text-slate-600">
+                          {nut[key] ? `${nut[key]} ${unit}` : `— ${unit}`}
+                        </span>
+                      ) : (
+                        <div className="flex items-center justify-end gap-1">
+                          <input
+                            value={draft.nutricional?.[key] ?? ''}
+                            onChange={e => setNut(key, e.target.value)}
+                            placeholder="—"
+                            className="w-20 text-right border border-slate-300 rounded px-1.5 py-0.5 text-xs focus:outline-none focus:border-blue-400"
+                          />
+                          <span className="text-slate-400 text-[10px] w-6">{unit}</span>
+                        </div>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
             <p className="px-3 py-1.5 text-[10px] text-slate-400 italic border-t border-slate-100 bg-slate-50">
-              *Valores diarios de referencia. Pendiente análisis de laboratorio.
+              *Valores por 100 g de producto. Pendiente análisis de laboratorio.
             </p>
           </div>
 
@@ -367,7 +473,7 @@ function ExpandPanel({
         <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Etapa del Proyecto</p>
         <div className="flex flex-col gap-1.5">
           {STAGES.map((name, i) => {
-            const ok = project.etapas[i];
+            const ok = p.etapas[i];
             return (
               <div
                 key={i}
@@ -399,13 +505,14 @@ function ExpandPanel({
 
 // ── Project table ─────────────────────────────────────────────────────────────
 function ProjectTable({
-  title, projects, photos, onPhotoChange, onDelete,
+  title, projects, photos, onPhotoChange, onDelete, onUpdate,
 }: {
   title: string;
   projects: Project[];
   photos: Record<string, string>;
   onPhotoChange: (id: string, url: string) => void;
   onDelete: (id: string) => void;
+  onUpdate: (updated: Project) => void;
 }) {
   const [expanded, setExpanded] = useState<string | null>(null);
   if (projects.length === 0) return null;
@@ -507,7 +614,7 @@ function ProjectTable({
 
         {/* Modal overlay — rendered outside scroll area, fixed over whole viewport */}
         {expandedProject && (
-          <ExpandPanel project={expandedProject} photos={photos} onPhotoChange={onPhotoChange} onClose={() => setExpanded(null)} />
+          <ExpandPanel project={expandedProject} photos={photos} onPhotoChange={onPhotoChange} onClose={() => setExpanded(null)} onUpdate={onUpdate} />
         )}
       </div>
     </section>
@@ -531,7 +638,9 @@ function loadProjects(): Project[] {
       const parsed = JSON.parse(saved) as Project[];
       const corrupt = parsed.some(p => HEADER_WORDS.has(p.nombre?.toUpperCase().trim() ?? ''));
       if (corrupt) { localStorage.removeItem(STORAGE_KEY); return projectsData; }
-      return parsed;
+      // Migrate: add nutricional if missing
+      const migrated = parsed.map(p => ({ ...p, nutricional: p.nutricional ?? emptyNutricional() }));
+      return migrated;
     }
   } catch { /* fallback */ }
   return projectsData;
@@ -557,6 +666,13 @@ export function Proyectos() {
     const next = projects.filter(p => p.id !== id);
     setProjects(next);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  }
+
+  function handleUpdate(updated: Project) {
+    const next = projects.map(p => p.id === updated.id ? updated : p);
+    setProjects(next);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    localStorage.setItem(STORAGE_KEY + '-version', DATA_VERSION);
   }
 
   function handleReset() {
@@ -677,9 +793,9 @@ export function Proyectos() {
       </div>
 
       {/* Tablas */}
-      <ProjectTable title="TIGO"   projects={tigo}   photos={photos} onPhotoChange={handlePhotoChange} onDelete={handleDelete} />
-      <ProjectTable title="Straal" projects={straal} photos={photos} onPhotoChange={handlePhotoChange} onDelete={handleDelete} />
-      <ProjectTable title="B&D"    projects={byd}    photos={photos} onPhotoChange={handlePhotoChange} onDelete={handleDelete} />
+      <ProjectTable title="TIGO"   projects={tigo}   photos={photos} onPhotoChange={handlePhotoChange} onDelete={handleDelete} onUpdate={handleUpdate} />
+      <ProjectTable title="Straal" projects={straal} photos={photos} onPhotoChange={handlePhotoChange} onDelete={handleDelete} onUpdate={handleUpdate} />
+      <ProjectTable title="B&D"    projects={byd}    photos={photos} onPhotoChange={handlePhotoChange} onDelete={handleDelete} onUpdate={handleUpdate} />
 
     </div>
   );

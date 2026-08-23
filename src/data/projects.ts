@@ -1,3 +1,19 @@
+export interface NutricionalRow {
+  energia: string;
+  proteinas: string;
+  grasaTotal: string;
+  grasaSat: string;
+  carbohidratos: string;
+  azucares: string;
+  sodio: string;
+  calcio: string;
+}
+
+export const emptyNutricional = (): NutricionalRow => ({
+  energia: '', proteinas: '', grasaTotal: '', grasaSat: '',
+  carbohidratos: '', azucares: '', sodio: '', calcio: '',
+});
+
 export interface Project {
   id: string;
   marca: 'tigo' | 'straal' | 'byd';
@@ -8,6 +24,7 @@ export interface Project {
   fecha: string;
   etapas: boolean[];
   ingredientes: string;
+  nutricional: NutricionalRow;
 }
 
 export const projectsData: Project[] = [
@@ -21,6 +38,7 @@ export const projectsData: Project[] = [
     fecha: 'Sep-26',
     etapas: [true,true,true,true,true,true,true,true,true,true,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
   {
     id: 's02', marca: 'straal', familia: 'Straal Pro Cuchareable',
@@ -30,6 +48,7 @@ export const projectsData: Project[] = [
     fecha: 'Sep-26',
     etapas: [true,true,true,true,true,true,true,true,true,true,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
   {
     id: 's03', marca: 'straal', familia: 'Straal Pro Shot Bebible',
@@ -39,6 +58,7 @@ export const projectsData: Project[] = [
     fecha: 'Nov-26',
     etapas: [true,true,true,true,true,false,false,false,false,false,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
   {
     id: 's04', marca: 'straal', familia: 'Straal Pro Shot Bebible',
@@ -48,6 +68,7 @@ export const projectsData: Project[] = [
     fecha: 'Nov-26',
     etapas: [true,true,true,true,true,false,false,false,false,false,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
   {
     id: 's05', marca: 'straal', familia: 'Straal Pro Shot Bebible',
@@ -57,6 +78,7 @@ export const projectsData: Project[] = [
     fecha: 'Nov-26',
     etapas: [true,true,true,true,true,false,false,false,false,false,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
   {
     id: 's06', marca: 'straal', familia: 'Straal Pro Shot Bebible',
@@ -66,6 +88,7 @@ export const projectsData: Project[] = [
     fecha: 'Nov-26',
     etapas: [true,true,true,true,true,false,false,false,false,false,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
   {
     id: 's07', marca: 'straal', familia: 'Straal Derivados',
@@ -75,6 +98,7 @@ export const projectsData: Project[] = [
     fecha: 'Dic-26',
     etapas: [true,false,false,false,false,false,false,false,false,false,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
 
   // ── TIGO · Nuevos ────────────────────────────────────────────────────────
@@ -86,6 +110,7 @@ export const projectsData: Project[] = [
     fecha: 'Oct-26',
     etapas: [true,true,true,true,true,true,true,true,false,false,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
   {
     id: 't02', marca: 'tigo', familia: 'Vidrio Deslactosado Frutado',
@@ -95,6 +120,7 @@ export const projectsData: Project[] = [
     fecha: 'Nov-26',
     etapas: [true,true,true,true,true,true,true,true,false,false,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
   {
     id: 't03', marca: 'tigo', familia: 'Griego Bebible Light',
@@ -104,6 +130,7 @@ export const projectsData: Project[] = [
     fecha: 'Nov-26',
     etapas: [true,true,false,false,false,false,false,false,false,false,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
   {
     id: 't04', marca: 'tigo', familia: 'Griego Bebible Light',
@@ -113,6 +140,7 @@ export const projectsData: Project[] = [
     fecha: 'Nov-26',
     etapas: [true,true,false,false,false,false,false,false,false,false,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
   {
     id: 't05', marca: 'tigo', familia: 'Tigo Digest',
@@ -122,6 +150,7 @@ export const projectsData: Project[] = [
     fecha: 'Nov-26',
     etapas: [true,false,false,false,false,false,false,false,false,false,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
   {
     id: 't06', marca: 'tigo', familia: 'Tigo Digest',
@@ -131,6 +160,7 @@ export const projectsData: Project[] = [
     fecha: 'Nov-26',
     etapas: [true,false,false,false,false,false,false,false,false,false,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
   {
     id: 't07', marca: 'tigo', familia: 'Línea Tigo Esencial+',
@@ -140,6 +170,7 @@ export const projectsData: Project[] = [
     fecha: 'Nov-26',
     etapas: [true,false,false,false,false,false,false,false,false,false,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
   {
     id: 't08', marca: 'tigo', familia: 'Línea Tigo Esencial+',
@@ -149,6 +180,7 @@ export const projectsData: Project[] = [
     fecha: 'Nov-26',
     etapas: [true,false,false,false,false,false,false,false,false,false,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
 
   // ── TIGO · Reformulaciones ────────────────────────────────────────────────
@@ -160,6 +192,7 @@ export const projectsData: Project[] = [
     fecha: 'Ago-26',
     etapas: [true,true,true,true,true,true,true,true,true,true,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
   {
     id: 't10', marca: 'tigo', familia: 'Griego Bebible',
@@ -169,6 +202,7 @@ export const projectsData: Project[] = [
     fecha: 'Ago-26',
     etapas: [true,true,true,true,true,true,true,true,true,true,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
   {
     id: 't11', marca: 'tigo', familia: 'Tigo Kids',
@@ -178,6 +212,7 @@ export const projectsData: Project[] = [
     fecha: 'Sep-26',
     etapas: [true,true,true,true,true,true,true,true,true,true,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
   {
     id: 't12', marca: 'tigo', familia: 'Tigo Kids',
@@ -187,6 +222,7 @@ export const projectsData: Project[] = [
     fecha: 'Ago-26',
     etapas: [true,true,true,true,true,true,true,true,true,true,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
   {
     id: 't13', marca: 'tigo', familia: 'Tigo Kids',
@@ -196,6 +232,7 @@ export const projectsData: Project[] = [
     fecha: 'Sep-26',
     etapas: [true,true,true,true,true,true,true,true,true,true,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
   {
     id: 't14', marca: 'tigo', familia: 'Tigo Premium',
@@ -205,6 +242,7 @@ export const projectsData: Project[] = [
     fecha: 'Oct-26',
     etapas: [true,true,true,false,false,false,false,false,false,false,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
   {
     id: 't15', marca: 'tigo', familia: 'Tigo Premium Light',
@@ -214,6 +252,7 @@ export const projectsData: Project[] = [
     fecha: 'Oct-26',
     etapas: [true,true,false,false,false,false,false,false,false,false,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
   {
     id: 't16', marca: 'tigo', familia: 'Tigo Mix',
@@ -223,6 +262,7 @@ export const projectsData: Project[] = [
     fecha: 'Nov-26',
     etapas: [true,true,true,true,true,true,true,true,false,false,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
   {
     id: 't17', marca: 'tigo', familia: 'Tigo Mix',
@@ -232,6 +272,7 @@ export const projectsData: Project[] = [
     fecha: 'Nov-26',
     etapas: [true,true,true,true,true,true,true,true,false,false,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
   {
     id: 't18', marca: 'tigo', familia: 'Tigo Mix',
@@ -241,6 +282,7 @@ export const projectsData: Project[] = [
     fecha: 'Nov-26',
     etapas: [true,true,true,true,true,true,true,true,false,false,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
   {
     id: 't19', marca: 'tigo', familia: 'Tigo Mix',
@@ -250,5 +292,6 @@ export const projectsData: Project[] = [
     fecha: 'Nov-26',
     etapas: [true,true,true,true,true,false,false,false,false,false,false],
     ingredientes: '',
+    nutricional: { energia: '', proteinas: '', grasaTotal: '', grasaSat: '', carbohidratos: '', azucares: '', sodio: '', calcio: '' },
   },
 ];
