@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { ChevronDown, ChevronRight, CheckSquare, Square, Upload, FileUp, Trash2, RotateCcw, AlertCircle } from 'lucide-react';
+import { ChevronDown, ChevronRight, CheckSquare, Square, Upload, FileUp, Trash2, RotateCcw, AlertCircle, X } from 'lucide-react';
 import { projectsData, type Project } from '../data/projects';
 
 // Para conectar Google Sheets en el futuro, pega aquí el URL CSV publicado:
@@ -204,11 +204,12 @@ const BRAND_FILTER_ACTIVE: Record<string, string> = {
 
 // ── Expand panel ──────────────────────────────────────────────────────────────
 function ExpandPanel({
-  project, photos, onPhotoChange,
+  project, photos, onPhotoChange, onClose,
 }: {
   project: Project;
   photos: Record<string, string>;
   onPhotoChange: (id: string, url: string) => void;
+  onClose: () => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const done   = project.etapas.filter(Boolean).length;
@@ -225,7 +226,30 @@ function ExpandPanel({
   }
 
   return (
-    <div className="flex flex-col md:grid gap-5 bg-slate-50/60 border-t border-slate-100 p-4 md:p-5 md:pl-16"
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(15,23,42,0.55)' }} onClick={onClose}>
+      <div className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl bg-white" onClick={e => e.stopPropagation()}>
+        {/* Modal close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors"
+          aria-label="Cerrar"
+        >
+          <X size={16} />
+        </button>
+
+        {/* Project name header */}
+        <div className="sticky top-0 bg-white border-b border-slate-100 px-5 py-3 flex items-start gap-3 z-10">
+          <span className={`text-[10px] font-bold px-2 py-1 rounded shrink-0 mt-0.5 ${
+            project.marca === 'tigo' ? 'bg-blue-600 text-white' :
+            project.marca === 'straal' ? 'bg-orange-500 text-white' : 'bg-violet-600 text-white'
+          }`}>{project.marca === 'tigo' ? 'TIGO' : project.marca === 'straal' ? 'Straal' : 'B&D'}</span>
+          <div>
+            <p className="text-sm font-bold text-slate-800 leading-snug">{project.nombre}</p>
+            <p className="text-[11px] text-slate-400">{project.familia} · {project.fecha}</p>
+          </div>
+        </div>
+
+    <div className="flex flex-col md:grid gap-5 bg-slate-50/60 p-4 md:p-5"
          style={{ gridTemplateColumns: '3fr 2fr' }}>
       {/* ── Izquierda ── */}
       <div className="flex flex-col gap-3">
@@ -368,6 +392,8 @@ function ExpandPanel({
       </div>
 
     </div>
+      </div>
+    </div>
   );
 }
 
@@ -479,9 +505,9 @@ function ProjectTable({
         </div>
         </div>
 
-        {/* Expand panel — OUTSIDE the scrollable area, full width */}
+        {/* Modal overlay — rendered outside scroll area, fixed over whole viewport */}
         {expandedProject && (
-          <ExpandPanel project={expandedProject} photos={photos} onPhotoChange={onPhotoChange} />
+          <ExpandPanel project={expandedProject} photos={photos} onPhotoChange={onPhotoChange} onClose={() => setExpanded(null)} />
         )}
       </div>
     </section>
