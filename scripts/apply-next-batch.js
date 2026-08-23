@@ -4,8 +4,12 @@
  * Lee el próximo batch JSON y genera código TypeScript para agregarlo a autoTrends.ts
  */
 
-const fs   = require('fs');
-const path = require('path');
+import fs   from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = path.dirname(__filename);
 
 const ROOT         = path.join(__dirname, '..');
 const COUNTER_FILE = path.join(ROOT, 'src/data/batchCounter.json');
