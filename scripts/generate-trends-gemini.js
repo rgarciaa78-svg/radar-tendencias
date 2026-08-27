@@ -36,9 +36,9 @@ const today = new Date().toISOString().split('T')[0];
 
 const PROMPT = `Eres un analista experto en tendencias de consumo masivo de alimentos y bebidas saludables para Latinoamérica con foco en Perú.
 
-Hoy es ${today}. Genera EXACTAMENTE 3 tendencias NUEVAS, REALES y DIFERENTES que estén ocurriendo ahora en EEUU y/o Europa en alimentos/bebidas saludables. Usa marcas reales, datos concretos, URLs verificables.
+Hoy es ${today}. Genera entre 5 y 8 tendencias NUEVAS, REALES y DIFERENTES que estén ocurriendo ahora en EEUU y/o Europa en alimentos/bebidas saludables. Incluye TODAS las que sean relevantes y verificables — no te limites a un número fijo. Usa marcas reales, datos concretos, URLs verificables.
 
-Devuelve SOLO JSON válido, sin markdown, sin explicaciones. Array de 3 objetos:
+Devuelve SOLO JSON válido, sin markdown, sin explicaciones. Array de objetos:
 
 [
   {
@@ -94,7 +94,7 @@ const response = await fetch(
         { role: 'user', content: PROMPT },
       ],
       temperature: 0.8,
-      max_tokens: 4000,
+      max_tokens: 8000,
     }),
   }
 );
