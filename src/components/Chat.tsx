@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Key, Trash2, Sparkles, X } from 'lucide-react';
 import { useTrendStore } from '../store/useTrendStore';
 
@@ -22,6 +22,117 @@ Tienes acceso al Radar de Tendencias con ${trends.length} tendencias globales de
 ${summary}
 
 Responde siempre en español, de forma concisa y accionable. Cuando el usuario pregunte por una tendencia específica, usa los datos del radar para dar contexto concreto. Puedes hacer análisis, comparaciones, recomendaciones de I+D, y estrategias de lanzamiento.`;
+}
+
+function renderMarkdown(text: string) {
+  const lines = text.split('\n');
+  const elements: React.ReactNode[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Table detection
+    if (line.trim().startsWith('|') && i + 1 < lines.length && lines[i + 1].trim().match(/^\|[-| :]+\|/)) {
+      const tableLines: string[] = [line];
+      i++;
+      while (i < lines.length && lines[i].trim().startsWith('|')) {
+        tableLines.push(lines[i]);
+        i++;
+      }
+      const headers = tableLines[0].split('|').filter((_, idx, arr) => idx > 0 && idx < arr.length - 1).map(h => h.trim());
+      const rows = tableLines.slice(2).map(row =>
+        row.split('|').filter((_, idx, arr) => idx > 0 && idx < arr.length - 1).map(c => c.trim())
+      );
+      elements.push(
+        <div key={i} className="overflow-x-auto my-2">
+          <table className="text-xs border-collapse w-full">
+            <thead>
+              <tr>{headers.map((h, idx) => <th key={idx} className="border border-slate-300 px-2 py-1 bg-slate-100 font-semibold text-left">{renderInline(h)}</th>)}</tr>
+            </thead>
+            <tbody>
+              {rows.map((row, ridx) => (
+                <tr key={ridx} className={ridx % 2 === 0 ? '' : 'bg-slate-50'}>
+                  {row.map((cell, cidx) => <td key={cidx} className="border border-slate-300 px-2 py-1">{renderInline(cell)}</td>)}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+      continue;
+    }
+
+    // Headings
+    if (/^#{1,3} /.test(line)) {
+      const level = line.match(/^(#{1,3}) /)?.[1].length ?? 1;
+      const content = line.replace(/^#{1,3} /, '');
+      const cls = level === 1 ? 'text-base font-bold mt-3 mb-1' : level === 2 ? 'text-sm font-bold mt-2 mb-1' : 'text-sm font-semibold mt-1.5 mb-0.5';
+      elements.push(<p key={i} className={cls}>{renderInline(content)}</p>);
+      i++;
+      continue;
+    }
+
+    // Horizontal rule
+    if (/^---+$/.test(line.trim())) {
+      elements.push(<hr key={i} className="border-slate-200 my-2" />);
+      i++;
+      continue;
+    }
+
+    // Bullet list item
+    if (/^[-*] /.test(line.trim())) {
+      const items: string[] = [];
+      while (i < lines.length && /^[-*] /.test(lines[i].trim())) {
+        items.push(lines[i].trim().replace(/^[-*] /, ''));
+        i++;
+      }
+      elements.push(
+        <ul key={i} className="list-disc list-inside space-y-0.5 my-1 pl-1">
+          {items.map((item, idx) => <li key={idx} className="text-sm">{renderInline(item)}</li>)}
+        </ul>
+      );
+      continue;
+    }
+
+    // Numbered list
+    if (/^\d+\. /.test(line.trim())) {
+      const items: string[] = [];
+      while (i < lines.length && /^\d+\. /.test(lines[i].trim())) {
+        items.push(lines[i].trim().replace(/^\d+\. /, ''));
+        i++;
+      }
+      elements.push(
+        <ol key={i} className="list-decimal list-inside space-y-0.5 my-1 pl-1">
+          {items.map((item, idx) => <li key={idx} className="text-sm">{renderInline(item)}</li>)}
+        </ol>
+      );
+      continue;
+    }
+
+    // Empty line
+    if (line.trim() === '') {
+      elements.push(<div key={i} className="h-1.5" />);
+      i++;
+      continue;
+    }
+
+    // Normal paragraph
+    elements.push(<p key={i} className="text-sm leading-relaxed">{renderInline(line)}</p>);
+    i++;
+  }
+
+  return <div className="space-y-0.5">{elements}</div>;
+}
+
+function renderInline(text: string): React.ReactNode {
+  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) return <strong key={i}>{part.slice(2, -2)}</strong>;
+    if (part.startsWith('*') && part.endsWith('*')) return <em key={i}>{part.slice(1, -1)}</em>;
+    if (part.startsWith('`') && part.endsWith('`')) return <code key={i} className="bg-slate-100 rounded px-1 font-mono text-xs">{part.slice(1, -1)}</code>;
+    return part;
+  });
 }
 
 export function Chat() {
@@ -253,7 +364,7 @@ export function Chat() {
                 ? 'bg-slate-800 text-white border-slate-700 rounded-tr-sm'
                 : 'bg-white text-slate-700 border-slate-100 rounded-tl-sm'
             }`}>
-              <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+              {msg.role === 'assistant' ? renderMarkdown(msg.content) : <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>}
             </div>
           </div>
         ))}
