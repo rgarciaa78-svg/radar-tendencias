@@ -53,8 +53,8 @@ export function Chat() {
 
   function saveKey() {
     const k = keyInput.trim();
-    if (!k.startsWith('AIza')) {
-      setError('La key debe comenzar con "AIza". Obtenla gratis en aistudio.google.com');
+    if (k.length < 20) {
+      setError('Key inválida. Cópiala desde aistudio.google.com → Claves de API → Copiar clave');
       return;
     }
     try { localStorage.setItem(API_KEY_STORAGE, k); } catch {}
@@ -92,7 +92,7 @@ export function Chat() {
       }));
 
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -152,7 +152,7 @@ export function Chat() {
             <ol className="list-decimal list-inside space-y-1 text-blue-700">
               <li>Ve a <strong>aistudio.google.com</strong></li>
               <li>Click en <strong>"Get API key"</strong> → <strong>"Create API key"</strong></li>
-              <li>Copia la key (empieza con <code className="bg-blue-100 px-1 rounded">AIza...</code>)</li>
+              <li>Click en el ícono de la clave → botón <strong>"Copiar clave"</strong></li>
               <li>Pégala aquí abajo</li>
             </ol>
             <p className="text-blue-600 text-xs mt-2">✓ 100% gratis · ✓ Sin tarjeta de crédito · ✓ 1,500 chats/día</p>
@@ -167,7 +167,7 @@ export function Chat() {
               value={keyInput}
               onChange={e => setKeyInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && saveKey()}
-              placeholder="AIzaSy..."
+              placeholder="AIza... o AQ.Ab..."
               className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {error && <p className="text-red-500 text-xs">{error}</p>}
