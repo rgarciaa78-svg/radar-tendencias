@@ -12,16 +12,44 @@ interface Message {
 }
 
 function buildSystemContext(trends: any[]): string {
-  const summary = trends.slice(0, 40).map(t =>
-    `- [${t.category}] "${t.name}" (${t.region}, score ${t.score}, prioridad ${t.priority}): ${t.evidence?.slice(0, 120)}...`
-  ).join('\n');
-  return `Eres un analista experto en innovación de alimentos y bebidas saludables para el mercado peruano, trabajando para una holding con las marcas TIGO (lácteos), B&D (salsas) y Straal (deportivo).
+  const trendDetails = trends.map(t => {
+    let entry = `### ${t.name} (ID: ${t.id})
+- Categoría: ${t.category} | Región: ${t.region}${t.country ? ` (${t.country})` : ''} | Marca asignada: ${t.brand}
+- Score: ${t.score}/100 | Prioridad: ${t.priority} | Complejidad: ${t.complexity || 'N/D'} | Estado: ${t.status}
+- Evidencia: ${t.evidence}`;
+    if (t.peruOpportunity) entry += `\n- Oportunidad Perú: ${t.peruOpportunity}`;
+    if (t.suggestedAction) entry += `\n- Acción sugerida: ${t.suggestedAction}`;
+    if (t.brief) {
+      const b = t.brief;
+      if (b.objetivo) entry += `\n- Objetivo brief: ${b.objetivo}`;
+      if (b.publicoObjetivo) entry += `\n- Público objetivo: ${b.publicoObjetivo}`;
+      if (b.mensajeClave) entry += `\n- Mensaje clave: ${b.mensajeClave}`;
+      if (b.posicionamiento) entry += `\n- Posicionamiento: ${b.posicionamiento}`;
+      if (b.timeline) entry += `\n- Timeline: ${b.timeline}`;
+      if (b.presupuesto) entry += `\n- Presupuesto estimado: ${b.presupuesto}`;
+      if (b.kpis?.length) entry += `\n- KPIs: ${b.kpis.join(' | ')}`;
+      if (b.canales?.length) entry += `\n- Canales: ${b.canales.join(', ')}`;
+    }
+    if (t.tags?.length) entry += `\n- Tags: ${t.tags.join(', ')}`;
+    return entry;
+  }).join('\n\n');
 
-Tienes acceso al Radar de Tendencias con ${trends.length} tendencias globales detectadas. Aquí un resumen de las principales:
+  return `Eres un analista senior de innovación en alimentos y bebidas saludables, especializado en el mercado peruano. Trabajas para una holding con tres marcas:
+- **TIGO**: lácteos (yogurt, kefir, quesos funcionales)
+- **B&D**: salsas y condimentos saludables
+- **Straal**: nutrición deportiva (proteínas, RTD, barras)
 
-${summary}
+INSTRUCCIONES CRÍTICAS:
+1. Responde SIEMPRE en español.
+2. Usa los datos completos del radar — nunca inventes tendencias ni cifras que no estén aquí.
+3. Da respuestas DETALLADAS y ACCIONABLES: incluye cifras concretas, comparaciones entre tendencias, análisis de viabilidad para Perú, y recomendaciones de próximos pasos.
+4. Cuando se pida un brief o análisis, usa los campos brief, peruOpportunity y suggestedAction disponibles en los datos.
+5. Cuando compares tendencias, usa sus scores, prioridades y complejidades para jerarquizarlas.
+6. Siempre menciona qué marca (TIGO/B&D/Straal) debería liderar cada oportunidad y por qué.
 
-Responde siempre en español, de forma concisa y accionable. Cuando el usuario pregunte por una tendencia específica, usa los datos del radar para dar contexto concreto. Puedes hacer análisis, comparaciones, recomendaciones de I+D, y estrategias de lanzamiento.`;
+RADAR DE TENDENCIAS — ${trends.length} tendencias detectadas:
+
+${trendDetails}`;
 }
 
 function renderMarkdown(text: string) {
@@ -210,7 +238,7 @@ export function Chat() {
           body: JSON.stringify({
             system_instruction: { parts: [{ text: systemCtx }] },
             contents: history,
-            generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
+            generationConfig: { temperature: 0.7, maxOutputTokens: 4096 },
           }),
         }
       );
