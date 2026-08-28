@@ -9,6 +9,7 @@ import { TrendsList } from './components/TrendsList';
 import { GlobalTrends } from './components/GlobalTrends';
 import { Campaigns } from './components/Campaigns';
 import { Proyectos } from './components/Proyectos';
+import { Chat } from './components/Chat';
 import { TrendModal } from './components/TrendModal';
 import { ExportModal } from './components/ExportModal';
 import { useTrendStore } from './store/useTrendStore';
@@ -21,6 +22,7 @@ const VIEW_LABELS: Record<string, string> = {
   favoritos:    'Favoritos',
   'campañas':   'Campañas Globales',
   proyectos:    'Proyectos I+D',
+  chat:         'Chat IA',
 };
 
 export default function App() {
@@ -83,6 +85,7 @@ export default function App() {
           {activeView === 'favoritos'    && <TrendsList onlyFavorites />}
           {activeView === 'campañas'     && <Campaigns />}
           {activeView === 'proyectos'    && <Proyectos />}
+          {activeView === 'chat'         && <Chat />}
         </main>
       </div>
 

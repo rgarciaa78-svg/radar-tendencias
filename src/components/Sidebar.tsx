@@ -1,4 +1,4 @@
-import { LayoutDashboard, TrendingUp, Heart, Globe2, Rocket, ChevronRight, RefreshCw, Megaphone, FlaskConical } from 'lucide-react';
+import { LayoutDashboard, TrendingUp, Heart, Globe2, Rocket, ChevronRight, RefreshCw, Megaphone, FlaskConical, MessageSquare } from 'lucide-react';
 import { useTrendStore } from '../store/useTrendStore';
 
 const nav = [
@@ -9,6 +9,7 @@ const nav = [
   { id: 'favoritos',    label: 'Favoritos',           icon: Heart },
   { id: 'campañas',    label: 'Campañas Globales',   icon: Megaphone },
   { id: 'proyectos',   label: 'Proyectos I+D',       icon: FlaskConical },
+  { id: 'chat',        label: 'Chat IA',             icon: MessageSquare },
 ] as const;
 
 const BRAND_META: Record<string, { color: string; desc: string }> = {

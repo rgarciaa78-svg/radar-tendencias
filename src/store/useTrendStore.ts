@@ -18,7 +18,7 @@ interface Filters {
   onlyFavorites: boolean;
 }
 
-type ActiveView = 'dashboard' | 'lanzamientos' | 'tendencias' | 'globales' | 'favoritos' | 'pipeline' | 'campañas' | 'proyectos';
+type ActiveView = 'dashboard' | 'lanzamientos' | 'tendencias' | 'globales' | 'favoritos' | 'pipeline' | 'campañas' | 'proyectos' | 'chat';
 
 interface TrendStore {
   trends: Trend[];
